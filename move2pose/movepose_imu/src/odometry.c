@@ -147,9 +147,7 @@ void odometry_simple(float right,float left)
         const_angle=const_frame/wheel_interval;
         once=0;
     }
-
     
-
 	//计算出里程计线速度 这里就是vy  不能横向走所以vx =0;
     velocity_linear = 0.5f*(odometry_right+odometry_left)*const_frame / dt;
 	//计算出里程计角速度

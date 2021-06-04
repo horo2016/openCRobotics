@@ -35,6 +35,17 @@ vector<Pose> traj_pose;
     Kp_beta*beta rotates the line so that it is parallel to the goal angle
 	alpha_error = tan(y,x)-theta 
 	beta_error = theta_goal-tan(y,x)
+	α = tan(dy,dx)- start_theta;
+	β = theta_goal - theta - (tan(dy,dx)-theta);
+	  = theta_goal - tan(dy,dx);
+	  
+	dθ = α + β = theta_goal - start_theta ;
+	上式中 dθ就是为要旋转的角度。dθ > 0 向右转。
+	dθ <0 向左转。
+	实际中需要加入 影响比例，该参数需要调试。
+	dθ = kα + pβ;k的值决定了向右转的幅度，p决定了向左转的幅度。
+	k越大转向角度越大，p同理.太小的话会导致转弯半径太大无法以最短的距离
+	行驶 到下一个航点。
 */
 int move2pose(float x_start,float y_start,float theta_start,float x_goal,float y_goal,float theta_goal)
 {
