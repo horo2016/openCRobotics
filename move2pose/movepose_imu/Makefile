@@ -50,7 +50,7 @@ C_SRC+=src/odometry.c
 CXX_SRC=
 CXX_SRC+=src/kalman.cpp
 CXX_SRC+=src/imu.cpp
-
+CXX_SRC+=src/move2pose.cpp
 CXX_SRC+= $(CXXFILES)
 OBJ=
 DEP=
