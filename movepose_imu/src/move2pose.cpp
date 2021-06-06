@@ -20,13 +20,41 @@ using namespace std;
 #include "odometry.h"
 #include "stm32_control.h"
 float Kp_rho = 0.5;;
-float Kp_alpha = 0.0015;
-float Kp_beta = -0.0003;
+float Kp_alpha = 1.5;
+float Kp_beta = -1.1;
 float deta = 0.01;
-float v,w;
+float v,w=0;
+float minwa = 0.4;
+float magxwa = 0.4;
+
+
+
 
 //pose 
 vector<Pose> traj_pose;
+
+//增量式PID
+float Incremental_PI (float Encoder,float Target)
+{ 	
+	 
+   float Kp=0.023,Ki=0.03;	
+	 static float Bias=0,Pwm=0,Last_bias=0,pwm2=0;
+	
+     
+	 Bias =  Encoder - Target;                //¼ÆËãÆ«²î
+	 printf("bias:%f \n",(Bias*180/3.14));
+	 if(fabs(Bias*180/3.14) < 10)
+	 {
+	 	 	Bias=0;Pwm=0;Last_bias=0;pwm2=0;
+			return 0;
+	 }
+	 Pwm =Kp*(Bias-Last_bias)+Ki*Bias;   //ÔöÁ¿Ê½PI¿ØÖÆÆ÷
+	 Pwm = Pwm + pwm2;
+	 pwm2 = Pwm;
+	 Last_bias=Bias;	                   //±£´æÉÏÒ»´ÎÆ«²î 
+	 return Pwm;                         //ÔöÁ¿Êä³ö
+}
+
 /*
     rho is the distance between the robot and the goal position
     alpha is the angle to the goal relative to the heading of the robot
@@ -78,31 +106,54 @@ int move2pose(float x_start,float y_start,float theta_start,float x_goal,float y
         // [-pi, pi] to prevent unstable behavior e.g. difference going
         // from 0 rad to 2*pi rad with slight turn
 		rho = sqrt(pow(x_diff,2) + pow(y_diff,2));
-		 
+		 //得到航向角和方位角之差
         float alpha = (atan2((double)y_diff, (double)x_diff) - theta )  ;
+		float v_error =  alpha / M_PI;
+		double Px = v_error,logPx=0 ;
+		
+		
+		
+		printf("logPx :%.5f \n",1/1+(Px));
 		if  (alpha < -M_PI)                     
             alpha = alpha + 2 * M_PI ;
         else if(alpha > M_PI)
             alpha = alpha - 2 * M_PI ;
+		
         float beta =  theta_goal - theta - alpha   ;
 		if  (beta < -M_PI)                     
             beta = beta + 2 * M_PI ;
         else if(beta > M_PI)
             beta = beta - 2 * M_PI ;
+		
         if (rho > dis/2)
             v = Kp_rho * rho;
         else  
             v = 0.5 ;
-		v = 0.1;//Kp_rho * rho;
-        w = Kp_alpha * alpha + Kp_beta * beta ;
-		cmd_send2(v, w);
+		
+		v = 0.01;//Kp_rho * rho;
+      //  w = Kp_alpha * alpha + Kp_beta * beta ;
+	//	printf("raw w:%.5f \n",w);
+		if(w < -0.0)
+			w = -minwa;
+		if(w > 0)
+			w = minwa;
+	
+		float ww =Incremental_PI(theta,theta_goal);
+		printf(" pid :%f\n",ww);
+		if(ww < -1.0)
+			ww = -minwa;
+		if(ww> 1)
+			ww = minwa;
+		cmd_send2(v, ww);
 		printf("$$$$$$$$$$$$current robot status$$$$$$$$$$$$$$ \n");
-        printf("%f,%.2f,%.2f,v:%.2f,w:%.2f \n",rho,alpha*180/3.14,beta*180/3.14,v,w);
+		printf("alpha:%1f theta:%1f\n",alpha*180/3.14,theta*180/3.14);
+		printf("goal:%f dis:%1f\n",theta_goal*180/3.14,rho);
+        printf("%.2f,%.2f,v:%.5f,w:%.5f \n",alpha*180/3.14,beta*180/3.14,v,w);
 		printf("from IMUDevice Heading:%f\n",heading);
 		//if alpha > np.pi / 2 or alpha < -np.pi / 2:
         //v = -v
 	//下面的参数用车体的代替
-         theta =    heading;//theta + w * deta;
+         theta =    heading*M_PI/180;//theta + w * deta;
          x = x +  position_x;//��ʼλ��x������// v *  cos(theta) * deta;
          y = y + position_y;   //v *  sin(theta) * deta;
 		 usleep(100000);
@@ -156,6 +207,9 @@ int readTraj()
 		traj_pose.push_back(tmpPose);
 	}
 }
+
+
+
 int moveFollow()
 {
 	
@@ -176,7 +230,7 @@ int moveFollow()
 	//wait imu device online 
 	sleep(2);
 	vector<Pose>::iterator it = traj_pose.begin();
-	 
+	
 	for(; it != traj_pose.end(); ++it)
 	{
 		cout<<" waypoint trajactory start" <<endl;

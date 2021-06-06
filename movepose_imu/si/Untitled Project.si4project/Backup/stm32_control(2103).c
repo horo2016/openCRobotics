@@ -329,9 +329,9 @@ int *stm_Loop()
 					vr.cvalue[i] = r_buffer[6+i];//encoder
 					
 				}	
-				// printf("***********parse Result**************\n");
-				// printf("From car receive vl.cvalue:%.3f \n",vl.fvalue);
-				// printf("From car receive vr.cvalue:%.3f \n",vr.fvalue);
+				 printf("***********parse Result**************\n");
+				 printf("From car receive vl.cvalue:%.3f \n",vl.fvalue);
+				 printf("From car receive vr.cvalue:%.3f \n",vr.fvalue);
 				 float vell,velr;
 	
 				//vell =(float)vl.fvalue*100/4/101/11*314;
