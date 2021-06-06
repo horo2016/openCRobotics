@@ -18,10 +18,10 @@ using namespace std;
 //app
 #include "imu.h"
 #include "odometry.h"
-
-float Kp_rho = 9;;
-float Kp_alpha = 15;
-float Kp_beta = -3;
+#include "stm32_control.h"
+float Kp_rho = 0.5;;
+float Kp_alpha = 0.0015;
+float Kp_beta = -0.0003;
 float deta = 0.01;
 float v,w;
 
@@ -64,7 +64,11 @@ int move2pose(float x_start,float y_start,float theta_start,float x_goal,float y
 	float rho = sqrt(dealtx + dealty);
      
     float dis = rho;
-	while(rho > 0.001)
+	//如果位置一样 但航向角存在差别 返回-1
+	if(dis  == 0)
+		return -1;
+	//条件为0.1 单位m
+	while(rho > 0.1)
 	{
 		x_traj.push_back(x);
         y_traj.push_back(y);
@@ -89,17 +93,19 @@ int move2pose(float x_start,float y_start,float theta_start,float x_goal,float y
             v = Kp_rho * rho;
         else  
             v = 0.5 ;
-		v = Kp_rho * rho;
+		v = 0.1;//Kp_rho * rho;
         w = Kp_alpha * alpha + Kp_beta * beta ;
-         printf("%f, %.2f,%.2f,%.2f,%.2f \n",rho,alpha*180/3.14,beta*180/3.14,v,w);
-		
+		cmd_send2(v, w);
+		printf("$$$$$$$$$$$$current robot status$$$$$$$$$$$$$$ \n");
+        printf("%f,%.2f,%.2f,v:%.2f,w:%.2f \n",rho,alpha*180/3.14,beta*180/3.14,v,w);
+		printf("from IMUDevice Heading:%f\n",heading);
 		//if alpha > np.pi / 2 or alpha < -np.pi / 2:
         //v = -v
 	//下面的参数用车体的代替
          theta =    heading;//theta + w * deta;
          x = x +  position_x;//��ʼλ��x������// v *  cos(theta) * deta;
          y = y + position_y;   //v *  sin(theta) * deta;
-		 sleep(1);
+		 usleep(100000);
 	}
 }
 string Trim(string& str)
@@ -153,9 +159,9 @@ int readTraj()
 int moveFollow()
 {
 	
-	float x_start = 1 ;
-	float y_start = 10 ;
-	float theta_start = 90*3.1415/180;
+	float x_start = 0 ;
+	float y_start = 0 ;
+	float theta_start = heading*3.1415/180;
 	float x_goal  =3 ;
 	float y_goal = 10 ;
 	float theta_goal = 10*3.1415/180;
@@ -163,21 +169,38 @@ int moveFollow()
 		  x_start, y_start, theta_start);
 	printf("Goal x: %d m\nGoal y: %d m\nGoal theta: %.2f rad\n" ,
 		  x_goal, y_goal, theta_goal);
-
+	int ret =0 ;
 	readTraj();
 	if(traj_pose.empty())
 		return 0;
+	//wait imu device online 
+	sleep(2);
 	vector<Pose>::iterator it = traj_pose.begin();
 	 
 	for(; it != traj_pose.end(); ++it)
 	{
+		cout<<" waypoint trajactory start" <<endl;
 		cout<<(*it).x<<","<<(*it).y<<","<<(*it).yaw<<" ";
-		//move2pose(x_start, y_start, theta_start, x_goal, y_goal, theta_goal);
+		
+		x_goal = (*it).x;
+		y_goal = (*it).y;
+		theta_goal = (*it).yaw *3.1415/180;
+		ret = move2pose(x_start, y_start, theta_start, x_goal, y_goal, theta_goal);
+		//返回问题状态
+		if(ret == -1)
+		{
+			theta_start = theta_start;
+		}else {
+		
+			theta_start = theta_goal;
+		}
+		x_start = x_goal;
+		y_start = y_goal;
 	}
-	cout<<endl;
-	while (1)
+	
+	/*while (1)
 		{
 		 printf("from IMU Device: %f \n",heading);
 		 usleep(5000);
-		}
+		}*/
 }
