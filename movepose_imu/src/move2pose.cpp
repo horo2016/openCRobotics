@@ -33,11 +33,11 @@ float magxwa = 0.4;
 //pose 
 vector<Pose> traj_pose;
 
-//增量式PID
-float Incremental_PI (float Encoder,float Target)
+//增量式PD
+float Incremental_PD (float Encoder,float Target)
 { 	
 	 
-   float Kp=0.023,Ki=0.03;	
+   float Kp=0.023,Kd=0.03;	
 	 static float Bias=0,Pwm=0,Last_bias=0,pwm2=0;
 	
      
@@ -49,13 +49,34 @@ float Incremental_PI (float Encoder,float Target)
 	 	 	Bias=0;Pwm=0;Last_bias=0;pwm2=0;
 			return 0;
 	 }
-	 Pwm =Kp*(Bias-Last_bias)+Ki*Bias;   //   
+	 Pwm =Kd*(Bias-Last_bias)+Kp*Bias;   //   
 	 Pwm = Pwm + pwm2;
 	 pwm2 = Pwm;
 	 Last_bias=Bias;	                   // 
 	 return Pwm;                         // 
 }
-
+//pi调节
+float Incremental_PI (float Encoder,float Target)
+{ 	
+	 
+   float Kp=0.023,Kd=0.03;	
+	 static float Bias=0,Pwm=0,Total_bias=0,pwm2=0;
+	
+     
+	 Bias =  Encoder - Target;                // 
+	 printf("bias:%f \n",(Bias*180/3.14));
+	 //+- 10度角的范围内
+	 if(fabs(Bias*180/3.14) < 10)
+	 {
+	 	 	Bias=0;Pwm=0;Total_bias=0;pwm2=0;
+			return 0;
+	 }
+	 Pwm =Ki*Total_bias +Kp*Bias;   //   
+	 Pwm = Pwm + pwm2;
+	 pwm2 = Pwm;
+	 Total_bias +=Bias;	                   // 
+	 return Pwm;                         // 
+}
 /*
     rho is the distance between the robot and the goal position
     alpha is the angle to the goal relative to the heading of the robot
@@ -139,7 +160,7 @@ int move2pose(float x_start,float y_start,float theta_start,float x_goal,float y
 		if(w > 0)
 			w = minwa;
 	
-		float ww =Incremental_PI(theta,theta_goal);
+		float ww =Incremental_PD(theta,theta_goal);
 		printf(" pid :%f\n",ww);
 		if(ww < -1.0)
 			ww = -minwa;
