@@ -41,18 +41,19 @@ float Incremental_PI (float Encoder,float Target)
 	 static float Bias=0,Pwm=0,Last_bias=0,pwm2=0;
 	
      
-	 Bias =  Encoder - Target;                //¼ÆËãÆ«²î
+	 Bias =  Encoder - Target;                // 
 	 printf("bias:%f \n",(Bias*180/3.14));
+	 //+- 10度角的范围内
 	 if(fabs(Bias*180/3.14) < 10)
 	 {
 	 	 	Bias=0;Pwm=0;Last_bias=0;pwm2=0;
 			return 0;
 	 }
-	 Pwm =Kp*(Bias-Last_bias)+Ki*Bias;   //ÔöÁ¿Ê½PI¿ØÖÆÆ÷
+	 Pwm =Kp*(Bias-Last_bias)+Ki*Bias;   //   
 	 Pwm = Pwm + pwm2;
 	 pwm2 = Pwm;
-	 Last_bias=Bias;	                   //±£´æÉÏÒ»´ÎÆ«²î 
-	 return Pwm;                         //ÔöÁ¿Êä³ö
+	 Last_bias=Bias;	                   // 
+	 return Pwm;                         // 
 }
 
 /*
@@ -154,8 +155,8 @@ int move2pose(float x_start,float y_start,float theta_start,float x_goal,float y
         //v = -v
 	//下面的参数用车体的代替
          theta =    heading*M_PI/180;//theta + w * deta;
-         x = x +  position_x;//��ʼλ��x������// v *  cos(theta) * deta;
-         y = y + position_y;   //v *  sin(theta) * deta;
+         x =   position_x;// // v *  cos(theta) * deta;
+         y =   position_y;   //v *  sin(theta) * deta;
 		 usleep(100000);
 	}
 }
