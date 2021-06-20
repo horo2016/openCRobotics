@@ -21,13 +21,14 @@ using namespace std;
 #include "stm32_control.h"
 float Kp_rho = 0.5;;
 float Kp_alpha = 1.5;
-float Kp_beta = -1.1;
-float deta = 0.01;
+float Kp_beta = -0.3;
+float deta = 0.1;// UNIT:S
 float v,w=0;
 float minwa = 0.4;
 float magxwa = 0.4;
 
 
+float speedMult[8] = {1.0f, 0.75f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
 
 
 //pose 
@@ -59,7 +60,7 @@ float Incremental_PD (float Encoder,float Target)
 float Incremental_PI (float Encoder,float Target)
 { 	
 	 
-   float Kp=0.023,Kd=0.03;	
+   float Kp=0.023,Ki=0.03;	
 	 static float Bias=0,Pwm=0,Total_bias=0,pwm2=0;
 	
      
@@ -129,13 +130,10 @@ int move2pose(float x_start,float y_start,float theta_start,float x_goal,float y
         // from 0 rad to 2*pi rad with slight turn
 		rho = sqrt(pow(x_diff,2) + pow(y_diff,2));
 		 //得到航向角和方位角之差
-        float alpha = (atan2((double)y_diff, (double)x_diff) - theta )  ;
-		float v_error =  alpha / M_PI;
-		double Px = v_error,logPx=0 ;
+		float orintation = atan2((double)y_diff, (double)x_diff);
+		printf("orintation:%.1f \n",orintation*180/M_PI);
+        float alpha = (orintation - theta )  ;
 		
-		
-		
-		printf("logPx :%.5f \n",1/1+(Px));
 		if  (alpha < -M_PI)                     
             alpha = alpha + 2 * M_PI ;
         else if(alpha > M_PI)
@@ -152,21 +150,23 @@ int move2pose(float x_start,float y_start,float theta_start,float x_goal,float y
         else  
             v = 0.5 ;
 		
-		v = 0.01;//Kp_rho * rho;
-      //  w = Kp_alpha * alpha + Kp_beta * beta ;
-	//	printf("raw w:%.5f \n",w);
+		v = 0.5;//Kp_rho * rho;
+        w = Kp_alpha * alpha + Kp_beta * beta ;
+		printf("raw w:%.5f \n",w);
 		if(w < -0.0)
 			w = -minwa;
 		if(w > 0)
 			w = minwa;
 	
 		float ww =Incremental_PD(theta,theta_goal);
-		printf(" pid :%f\n",ww);
+		//printf(" pid :%f\n",ww);
 		if(ww < -1.0)
 			ww = -minwa;
 		if(ww> 1)
 			ww = minwa;
-		cmd_send2(v, ww);
+
+		v = v*speedMult[(int)(abs(alpha*180/M_PI)/22.5f)];
+		cmd_send2(v, w);
 		printf("$$$$$$$$$$$$current robot status$$$$$$$$$$$$$$ \n");
 		printf("alpha:%1f theta:%1f\n",alpha*180/3.14,theta*180/3.14);
 		printf("goal:%f dis:%1f\n",theta_goal*180/3.14,rho);
@@ -175,9 +175,9 @@ int move2pose(float x_start,float y_start,float theta_start,float x_goal,float y
 		//if alpha > np.pi / 2 or alpha < -np.pi / 2:
         //v = -v
 	//下面的参数用车体的代替
-         theta =    heading*M_PI/180;//theta + w * deta;
-         x =   position_x;// // v *  cos(theta) * deta;
-         y =   position_y;   //v *  sin(theta) * deta;
+         theta =    (-heading)*M_PI/180;//theta + w * deta;
+         x +=    velspeed *  cos(theta) * deta; //position_x;// //
+         y +=    velspeed *  sin(theta) * deta; //position_y;   //
 		 usleep(100000);
 	}
 }
@@ -237,7 +237,8 @@ int moveFollow()
 	
 	float x_start = 0 ;
 	float y_start = 0 ;
-	float theta_start = heading*3.1415/180;
+	//imu read inverse different tan imu读取的航向角和直角坐标系相反
+	float theta_start = (-heading)*3.1415/180;
 	float x_goal  =3 ;
 	float y_goal = 10 ;
 	float theta_goal = 10*3.1415/180;
@@ -251,6 +252,7 @@ int moveFollow()
 		return 0;
 	//wait imu device online 
 	sleep(2);
+	theta_start = -heading*3.1415/180;
 	vector<Pose>::iterator it = traj_pose.begin();
 	
 	for(; it != traj_pose.end(); ++it)

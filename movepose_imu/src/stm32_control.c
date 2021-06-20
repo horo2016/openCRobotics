@@ -337,8 +337,7 @@ int *stm_Loop()
 				//vell =(float)vl.fvalue*100/4/101/11*314;
             	//velr = (float)vr.fvalue*100/4/101/11*314;
 				odometry_simple(vr.fvalue,vl.fvalue);
-				 velspeed = (vx.fvalue);
-				 angspeed = (va.fvalue);
+				 
 				 positionx = posx.fvalue *10;
 			   }
 			

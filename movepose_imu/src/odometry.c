@@ -1,7 +1,7 @@
 #include "odometry.h"
 #include <math.h>
 
-
+#include "stm32_control.h"
 
 wheelInf wheelParam;
 /***********************************************  输出  *****************************************************************/
@@ -152,7 +152,8 @@ void odometry_simple(float right,float left)
     velocity_linear = 0.5f*(odometry_right+odometry_left)*const_frame / dt;
 	//计算出里程计角速度
     velocity_angular = (odometry_right -odometry_left) *const_angle / dt;
-	 
+	velspeed = velocity_linear;
+	angspeed = velocity_angular;
 	double delta_x = velocity_linear * cos(oriention)  * dt;
 	double delta_y = velocity_linear * sin(oriention)  * dt;
 	double delta_th = velocity_angular * dt;
