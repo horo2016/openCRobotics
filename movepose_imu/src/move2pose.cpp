@@ -28,7 +28,7 @@ float minwa = 0.4;
 float magxwa = 0.4;
 
 
-float speedMult[8] = {1.0f, 0.75f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+float speedMult[8] = {0.75f, 0.5f, 0.25f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
 
 
 //pose 
@@ -38,11 +38,11 @@ vector<Pose> traj_pose;
 float Incremental_PD (float Encoder,float Target)
 { 	
 	 
-   float Kp=0.023,Kd=0.03;	
+   float Kp=0.0923,Kd=0.003;	
 	 static float Bias=0,Pwm=0,Last_bias=0,pwm2=0;
 	
      
-	 Bias =  Encoder - Target;                // 
+	 Bias = Target - Encoder  ;                // 
 	 printf("bias:%f \n",(Bias*180/3.14));
 	 //+- 10度角的范围内
 	 if(fabs(Bias*180/3.14) < 10)
@@ -64,7 +64,7 @@ float Incremental_PI (float Encoder,float Target)
 	 static float Bias=0,Pwm=0,Total_bias=0,pwm2=0;
 	
      
-	 Bias =  Encoder - Target;                // 
+	 Bias =  Target -Encoder ;                // 
 	 printf("bias:%f \n",(Bias*180/3.14));
 	 //+- 10度角的范围内
 	 if(fabs(Bias*180/3.14) < 10)
@@ -78,6 +78,28 @@ float Incremental_PI (float Encoder,float Target)
 	 Total_bias +=Bias;	                   // 
 	 return Pwm;                         // 
 }
+float Incremental_P (float Encoder,float Target)
+{ 	
+	 
+   float Kp=0.053,Ki=0.03;	
+	 static float Bias=0,Pwm=0,Total_bias=0,pwm2=0;
+	
+     
+	 Bias =  Target -Encoder ;                // 
+	
+	 //+- 10度角的范围内
+	 if(fabs(Bias*180/3.14) < 10)
+	 {
+	 	 	Bias=0;Pwm=0;Total_bias=0;pwm2=0;
+			return 0;
+	 }
+	 Pwm = Kp*Bias;   //   
+	// Pwm = Pwm + pwm2;
+	// pwm2 = Pwm;
+	 	               
+	 return Pwm;                         // 
+}
+
 /*
     rho is the distance between the robot and the goal position
     alpha is the angle to the goal relative to the heading of the robot
@@ -119,7 +141,7 @@ int move2pose(float x_start,float y_start,float theta_start,float x_goal,float y
 	if(dis  == 0)
 		return -1;
 	//条件为0.1 单位m
-	while(rho > 0.1)
+	while(rho > 0.2)
 	{
 		x_traj.push_back(x);
         y_traj.push_back(y);
@@ -131,7 +153,19 @@ int move2pose(float x_start,float y_start,float theta_start,float x_goal,float y
 		rho = sqrt(pow(x_diff,2) + pow(y_diff,2));
 		 //得到航向角和方位角之差
 		float orintation = atan2((double)y_diff, (double)x_diff);
-		printf("orintation:%.1f \n",orintation*180/M_PI);
+		printf(">>>>>>>> robot status<<<<<<<<<<<<<<< \n");
+		printf("Pose: \n");
+		printf("    x:%1f \n",x);
+		printf("    y:%1f \n",y);
+		printf("    theta:%1f \n",theta*180/3.14);
+		printf("Goal: \n");
+		printf("    x:%1f \n",x_goal);
+		printf("    y:%1f \n",y_goal);
+		printf("    theta:%1f \n",theta_goal*180/3.14);
+		
+		
+	
+		
         float alpha = (orintation - theta )  ;
 		
 		if  (alpha < -M_PI)                     
@@ -150,28 +184,35 @@ int move2pose(float x_start,float y_start,float theta_start,float x_goal,float y
         else  
             v = 0.5 ;
 		
-		v = 0.5;//Kp_rho * rho;
+		v = 0.2;//Kp_rho * rho;
         w = Kp_alpha * alpha + Kp_beta * beta ;
-		printf("raw w:%.5f \n",w);
+		
 		if(w < -0.0)
 			w = -minwa;
 		if(w > 0)
 			w = minwa;
 	
-		float ww =Incremental_PD(theta,theta_goal);
-		//printf(" pid :%f\n",ww);
+		printf("Kinectic: \n");
+		printf("    Dis:%1f\n",rho);
+		printf("    orintation:%.1f \n",orintation*180/M_PI);
+        printf("    alpha:%1f \n",alpha*180/3.14);
+		printf("    IMUDevice Heading:%f\n",heading); 
+		
+		float ww =Incremental_P(theta,orintation);
+		
 		if(ww < -1.0)
 			ww = -minwa;
 		if(ww> 1)
 			ww = minwa;
 
 		v = v*speedMult[(int)(abs(alpha*180/M_PI)/22.5f)];
-		cmd_send2(v, w);
-		printf("$$$$$$$$$$$$current robot status$$$$$$$$$$$$$$ \n");
-		printf("alpha:%1f theta:%1f\n",alpha*180/3.14,theta*180/3.14);
-		printf("goal:%f dis:%1f\n",theta_goal*180/3.14,rho);
-        printf("%.2f,%.2f,v:%.5f,w:%.5f \n",alpha*180/3.14,beta*180/3.14,v,w);
-		printf("from IMUDevice Heading:%f\n",heading);
+		printf("Control: \n");
+		printf("    v:%1f \n",v);
+		printf("    w:%1f \n",ww);
+		
+		cmd_send2(v, ww);
+		
+	
 		//if alpha > np.pi / 2 or alpha < -np.pi / 2:
         //v = -v
 	//下面的参数用车体的代替

@@ -171,11 +171,14 @@ void odometry_simple(float right,float left)
 	{
 		oriention += pi_2_1;
 	}
-	printf("*************odom output********************\n");
-	printf("linear vel:%3f,ang vel:%3f,\n",velocity_linear,velocity_angular);
-	printf("position_x:%3f,position_y:%3f,\n",position_x,position_y);
-    printf("odom heading:%3f\n",oriention*180/3.1415);
-	printf("*************odom output end********************\n");
+	printf("odom:\n");
+	printf("    vel:%3f\n",velocity_linear);
+	printf("    ang:%3f,\n",velocity_angular);
+	printf("    pose:\n");
+	printf("        position_x:%3f,\n",position_x);
+	printf("        position_y:%3f,\n",position_y);
+    printf("        heading:%3f\n",oriention*180/3.1415);
+
     //方向角角度纠正
 
 }
