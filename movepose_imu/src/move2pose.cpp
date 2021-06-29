@@ -196,8 +196,8 @@ int move2pose(float x_start,float y_start,float theta_start,float x_goal,float y
 		printf("    Dis:%1f\n",rho);
 		printf("    orintation:%.1f \n",orintation*180/M_PI);
         printf("    alpha:%1f \n",alpha*180/3.14);
-		printf("    IMUDevice Heading:%f\n",heading); 
-		
+		printf("    IMUDevice Heading:%f\n",-heading); 
+		printf("    courseHeading:%f\n",-courseHeading); 
 		float ww =Incremental_P(theta,orintation);
 		
 		if(ww < -1.0)
@@ -216,7 +216,7 @@ int move2pose(float x_start,float y_start,float theta_start,float x_goal,float y
 		//if alpha > np.pi / 2 or alpha < -np.pi / 2:
         //v = -v
 	//下面的参数用车体的代替
-         theta =    (-heading)*M_PI/180;//theta + w * deta;
+         theta =    (-courseHeading)*M_PI/180;//theta + w * deta;
          x +=    velspeed *  cos(theta) * deta; //position_x;// //
          y +=    velspeed *  sin(theta) * deta; //position_y;   //
 		 usleep(100000);
@@ -279,7 +279,7 @@ int moveFollow()
 	float x_start = 0 ;
 	float y_start = 0 ;
 	//imu read inverse different tan imu读取的航向角和直角坐标系相反
-	float theta_start = (-heading)*3.1415/180;
+	float theta_start = (-courseHeading)*3.1415/180;
 	float x_goal  =3 ;
 	float y_goal = 10 ;
 	float theta_goal = 10*3.1415/180;
@@ -293,7 +293,7 @@ int moveFollow()
 		return 0;
 	//wait imu device online 
 	sleep(2);
-	theta_start = -heading*3.1415/180;
+	theta_start = -courseHeading*3.1415/180;
 	vector<Pose>::iterator it = traj_pose.begin();
 	
 	for(; it != traj_pose.end(); ++it)

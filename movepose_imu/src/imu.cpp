@@ -52,6 +52,8 @@ Kalman zGyroFilter(0.125, 4, 1, 0);
 float rollAngle = 0;
 float pitchAngle = 0;
 float heading = 0;
+float courseHeading = 0;
+float offsetHeading =0;
 unsigned long heading_t;
 static unsigned long getmillis()
 {
@@ -140,7 +142,9 @@ void *IMUThread(void *)
 		rollAngle = imuData.fusionPose.x() * (180 / M_PI);
 		pitchAngle = imuData.fusionPose.y() * (180 / M_PI);
 		heading = imuData.fusionPose.z() * (180 / M_PI);
-
+		if(offsetHeading == 0)
+			offsetHeading = heading ;
+		courseHeading = heading -  offsetHeading + 90;
 		/*if  (heading < -M_PI)                     
             heading = heading + 2 * M_PI ;
         else if(heading > M_PI)

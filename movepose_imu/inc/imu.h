@@ -11,7 +11,7 @@ extern float heading ;
 extern float rollAngle ;
 extern float pitchAngle  ;
 
-
+extern float courseHeading;
 
 #ifdef __cplusplus
 }
