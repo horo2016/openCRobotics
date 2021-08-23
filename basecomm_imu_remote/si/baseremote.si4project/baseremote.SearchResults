@@ -1,0 +1,9 @@
+---- raspi_sonars Matches (8 in 2 files) ----
+raspi_sonar.cpp (E:\gpsmap\openCRobotics\base_comm_imu_remote\src) line 129 : sonar_dis  raspi_sonars[3];
+applyKF in raspi_sonar.cpp (E:\gpsmap\openCRobotics\base_comm_imu_remote\src) :    isObstacleLeft = obstacleDetection(2,(raspi_sonars[2].distance));
+applyKF in raspi_sonar.cpp (E:\gpsmap\openCRobotics\base_comm_imu_remote\src) :    isObstacleCenter = obstacleDetection(1,(raspi_sonars[1].distance));
+applyKF in raspi_sonar.cpp (E:\gpsmap\openCRobotics\base_comm_imu_remote\src) :    isObstacleRight = obstacleDetection(0,(raspi_sonars[0].distance));
+main_sonar in raspi_sonar.cpp (E:\gpsmap\openCRobotics\base_comm_imu_remote\src) : 				   raspi_sonars[sonar.id].distance =  (echo_callback(sonar.id))  ;
+main_sonar in raspi_sonar.cpp (E:\gpsmap\openCRobotics\base_comm_imu_remote\src) : 					 raspi_sonars[sonar.id].distance =	(echo_callback(sonar.id))  ;
+main_sonar in raspi_sonar.cpp (E:\gpsmap\openCRobotics\base_comm_imu_remote\src) : 					 raspi_sonars[sonar.id].distance =	(echo_callback(sonar.id))  ;
+raspi_sonar.h (E:\gpsmap\openCRobotics\base_comm_imu_remote\inc) line 13 : extern sonar_dis raspi_sonars[3];
