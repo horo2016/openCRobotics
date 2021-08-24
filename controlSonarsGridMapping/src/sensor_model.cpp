@@ -34,28 +34,24 @@ static double CalculateAngle(Point Mar1Point, Point Mar2Point)
     double current_angle = arcLength1 * 180 / M_PI;  //角度
     return current_angle;
 }
-//int Map_Size = 100;
 
-//int Xr = float(Map_Size/2);// #Set intial robot position
-//int Yr = float(Map_Size/2);
-//int Rangle =0;
 
 
 double **SonarModel(cv::Mat occmap,int Xr,int Yr,int Rangle,int SonarDist,int cellsize,float scale)
 {
 
-	int Map_Size = occmap.cols;
+	int Map_size = occmap.cols;
 	int thick  = int(cellsize * scale);
      SonarDist = int(SonarDist * scale);
 	//创建一张图片  100*100的unsigned char 矩阵 都为0
-	//Mat img1(Map_Size, Map_Size, CV_8UC1, cv::Scalar(0));
+	//Mat img1(Map_size, Map_size, CV_8UC1, cv::Scalar(0));
 	//Returns: Sonar_log - Array of log odds probabilities. 
 	//This can be added to existing log odds occ map to update map with latest sonar data.
-	//double **Sonar_log[Map_Size][Map_Size];
-	double **Sonar_log= (double**)malloc(Map_Size*sizeof(double));
-	for (int i = 0; i < Map_Size; i++)
+	//double **Sonar_log[Map_size][Map_size];
+	double **Sonar_log= (double**)malloc(Map_size*sizeof(double));
+	for (int i = 0; i < Map_size; i++)
 	{
-		Sonar_log[i] = (double *)malloc(Map_Size * sizeof(double));
+		Sonar_log[i] = (double *)malloc(Map_size * sizeof(double));
 	}
 	
 	 // 进行图像灰度化操作
@@ -141,16 +137,16 @@ double **SonarModel(cv::Mat occmap,int Xr,int Yr,int Rangle,int SonarDist,int ce
 int SonarModelArray(cv::Mat occmap,int Xr,int Yr,int Rangle,int SonarDist,int cellsize,float scale)
 {
 
-	int Map_Size = occmap.cols;
+	int Map_size = occmap.cols;
 	//这里必须重新构建新地图，如果直接使用occmap 绘制，会导致重复使用出现重影
-	Mat mapgrid(Map_Size, Map_Size, CV_8UC1, cv::Scalar(0));
+	Mat mapgrid(Map_size, Map_size, CV_8UC1, cv::Scalar(0));
 	int thick  = int(cellsize * scale);
      SonarDist = int(SonarDist * scale);
 	//创建一张图片  100*100的unsigned char 矩阵 都为0
-	//Mat img1(Map_Size, Map_Size, CV_8UC1, cv::Scalar(0));
+	//Mat img1(Map_size, Map_size, CV_8UC1, cv::Scalar(0));
 	//Returns: Sonar_log - Array of log odds probabilities. 
 	//This can be added to existing log odds occ map to update map with latest sonar data.
-	//double **Sonar_log[Map_Size][Map_Size];
+	//double **Sonar_log[Map_size][Map_size];
 	
 	
 

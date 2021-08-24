@@ -13,6 +13,7 @@
 //app files
 #include "raspi_sonar.h"
 #include "imu.h"
+#include "odometry.h"
 
 using namespace std;
 using namespace cv;
@@ -32,7 +33,7 @@ static double CalculateRadians(int degree)
     return current_angle;
 }
 
-#define Map_Size  300
+
 double Sonars_logs[Map_Size][Map_Size]={0};
 
 int onlineMaping_Array()
