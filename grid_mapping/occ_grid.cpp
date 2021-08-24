@@ -105,7 +105,7 @@ int offline_test_Array()
 			
 		
 			std::memcpy(Aimg.data, Sonars_logs, Map_Size*Map_Size*sizeof(double));
-			cv::add(Aimg,Map_log_sonar,Map_log_sonar);
+			//cv::add(Aimg,Map_log_sonar,Map_log_sonar);
 			Map_log_sonar = Map_log_sonar + Aimg;
              
 		}
@@ -115,7 +115,7 @@ int offline_test_Array()
 			
 		
 			std::memcpy(Aimg.data, Sonars_logs, Map_Size*Map_Size*sizeof(double));
-			cv::add(Aimg,Map_log_sonar,Map_log_sonar);
+			//cv::add(Aimg,Map_log_sonar,Map_log_sonar);
 			Map_log_sonar = Map_log_sonar + Aimg;
              
 		}
