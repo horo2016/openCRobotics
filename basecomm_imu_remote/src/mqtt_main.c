@@ -13,7 +13,7 @@
 #include "imu.h"
 #include "cpu_sys.h"
 #include "stm32_control.h"
-#include "navi_manage.h"
+
 #include "config_conf.h"
 
 #include "client_pub_sub.h"

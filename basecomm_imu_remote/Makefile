@@ -10,7 +10,7 @@ RTIMULIBPATH  = ../RTIMULib
 CFLAGS  += -g -pthread -Wall 
 CFLAGS  += -rdynamic -funwind-tables
 
-CFLAGS = -O2 -I./include -I./Mqtt
+CFLAGS = -O2 
 INCPATH   += -I. -I$(RTIMULIBPATH)
 CFLAGS  += -I./inc    -I$(RTIMULIBPATH)
 CFLAGS  += -I./Mqtt 
@@ -19,7 +19,8 @@ DIR_LIBMQTT = Mqtt
 
 DIR_OBJ = obj
 
- 
+DIRS = 	$(DIR_LIB)				\
+		$(DIR_LIBMQTT)
 		
 FILES = $(foreach dir, $(DIRS),$(wildcard $(dir)/*.c))	
 CXXDIRS = 	$(RTIMULIBPATH)				\
@@ -28,20 +29,19 @@ CXXFILES =	$(foreach dir, $(CXXDIRS),$(wildcard $(dir)/*.cpp))
 CXXFLAGS  += -I./inc  
 CXXFLAGS  += -I$(RTIMULIBPATH)/IMUDrivers
 CFLAGS += -D__unused="__attribute__((__unused__))"
-
+CXXFLAGS += -I/usr/local/include/opencv
+CXXFLAGS += -I/usr/inc/opencv/opencv2
+CXXFLAGS += -I/usr/local/include 
+#LDFLAGS += -L./usr/lib/gpac
 LDFLAGS += -ldl
+LDFLAGS += -L/usr/local/lib/  
 LDFLAGS +=  -L./Mqtt/lib -lmosquitto
-LDFLAGS += -L/usr/local/lib/
 LDFLAGS += -lopencv_core -ldl -lm  -lstdc++
 
-CFLAGS += -I/usr/local/include/opencv
-CFLAGS += -I/usr/local/inc/opencv/opencv2
-CFLAGS += -I/usr/local/include  
-
-#LDFLAGS += -L./usr/lib -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab 
+LDFLAGS += -lwiringPi
 LDFLAGS +=  -lopencv_calib3d   -lopencv_features2d   -lopencv_imgcodecs   -lopencv_ml  -lopencv_objdetect  -lopencv_photo  
 LDFLAGS +=  -lopencv_shape -lopencv_stitching -lopencv_superres  -lopencv_video -lopencv_videostab -lopencv_videoio   -lopencv_highgui
-LDFLAGS += -lIlmImf -llibjasper -llibtiff  -llibjpeg -llibwebp  -lopencv_imgproc -lopencv_flann -lopencv_core
+LDFLAGS += -lIlmImf -llibjasper -llibtiff  -llibjpeg -llibwebp -lzlib -lopencv_imgproc -lopencv_flann -lopencv_core
 LDFLAGS += -lrt -lpthread -pthread -lm -ldl 
 
 C_SRC=
@@ -55,21 +55,26 @@ C_SRC+= $(FILES)
 
 
 #stm32 control
+C_SRC+=src/socket_tcp.c
 C_SRC+=src/stm32_control.c
 C_SRC+=src/Uart_comm.c
-C_SRC+=src/cJSON.c
 C_SRC+=src/odometry.c
+C_SRC+=src/cJSON.c
+
 
 CXX_SRC=
-CXX_SRC+=src/kalman.cpp
+CXX_SRC +=src/kalman.cpp
 CXX_SRC+=src/imu.cpp
-CXX_SRC+= src/trajpaint.cpp
 CXX_SRC+= src/cpu_sys.cpp
 CXX_SRC+= $(CXXFILES)
+
+CXX_SRC +=  src/raspi_sonar.cpp
+CXX_SRC +=  src/trajpaint.cpp
 OBJ=
 DEP=
 OBJECTS_DIR   = objects/
 
+# Files
 
 
 OBJECTS = objects/RTIMULibDrive.o \
@@ -107,7 +112,7 @@ CXXFLAGS += -std=c++11 $(CFLAGS)
 #LDFLAGS+= -lcamera
 
 OBJ_CAM_SRV = src/main.o
-TARGETS    += baseWriteCommImu
+TARGETS    += basecommwritetraj
 $(TARGETS): $(OBJ_CAM_SRV)
 TARGET_OBJ += $(OBJ_CAM_SRV)
 
