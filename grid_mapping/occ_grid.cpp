@@ -134,7 +134,8 @@ int offline_test_Array()
 		img3 = 1 -img2;
 		//resize(src, dst, cv::Size(1000, 1000));
 		resize(img3,img3,Size(1000,1000));
-		imshow("Map_log",img3);
+		//imshow("Map_log",img3);
+		imwrite("Map_log.png",img3*255);
 		waitKey(0);
 		
 	}
