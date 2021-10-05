@@ -126,7 +126,7 @@ static std::vector<Sonar> sonars;
 #define HC_SR04_READ_TIMEOUT 100000 //us -> 100ms
 
 static unsigned int  time_spent = 0;
-sonar_dis  raspi_sonars[3];
+sonar_dis  raspi_sonars[5];
 static void hc_sr04_clear_timeout(void)
 {
     time_spent = 0;
@@ -139,6 +139,7 @@ static unsigned char  hc_sr04_is_timeout(unsigned short sleep_us)
     unsigned char is_timeout = 1;
     if (time_spent >= HC_SR04_READ_TIMEOUT) {
         is_timeout = 0;
+			//	printf("time out \n");
     }
 
     return is_timeout;
@@ -252,11 +253,12 @@ else  if(id ==2){
  
  
 	 // pin numbers are specific to the hardware
-	 sonars.push_back(Sonar(28, 29, 0));
-	 sonars.push_back(Sonar(26, 27, 1));
-	 sonars.push_back(Sonar(24, 25, 2));
-	// sonars.push_back(Sonar(27, 22, 3));
-	// sonars.push_back(Sonar(19, 26, 4));
+	 sonars.push_back(Sonar(28, 29, 0));//board sonic3
+   sonars.push_back(Sonar(22, 23, 1));
+	// sonars.push_back(Sonar(26, 27, 1));//sonic2 board
+	 sonars.push_back(Sonar(24, 25, 2));//sinic1 in board
+	 //sonars.push_back(Sonar(22, 23, 3));//sonic4 inboard
+	// sonars.push_back(Sonar(4, 5, 4));
  
 	 if (!setup_gpio()) {
 		 printf("Cannot initalize gpio");
@@ -271,16 +273,11 @@ else  if(id ==2){
 	 while (1) {
 		 for (auto& sonar: sonars) {
 			 sonar_trigger(sonar.id);
-				 if(sonar.id == 0)
-				   raspi_sonars[sonar.id].distance =  (echo_callback(sonar.id))  ;
-				 else if(sonar.id == 1)
-					 raspi_sonars[sonar.id].distance =	(echo_callback(sonar.id))  ;
-				 else if(sonar.id == 2)
-					 raspi_sonars[sonar.id].distance =	(echo_callback(sonar.id))  ;
-									  
-
+		   raspi_sonars[sonar.id].distance =	(echo_callback(sonar.id))  ;
+										  
+      // printf("%d dis:%f\n",sonar.id,raspi_sonars[sonar.id].distance);
 				 //applyKF();
-			 usleep(1000);
+			 usleep(10000);
 		 }
 		
 	 }
