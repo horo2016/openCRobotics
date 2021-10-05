@@ -36,6 +36,7 @@ static double CalculateRadians(int degree)
 
 double Sonars_logs[Map_Size][Map_Size]={0};
 
+
 int onlineMaping_Array()
 {
 
@@ -67,26 +68,30 @@ int onlineMaping_Array()
 	
 	
 		//Robot heading angle
-		int angle = courseHeading *180/3.14;
-		int inv_angle = angle+30 ;//angle for rear sonar sensor
-		int left_angle = angle-30 ;
-		
+		int angle =  0-courseHeading ;
+		int left_angle  = angle-30 ;//angle for rear sonar sensor
+		int right_angle = angle+30 ;//´ÓxÖá ÄæÊ±Õë0~ -90¶È ¿ªÊ¼
+	
 		
 		
 		//Distance travelled by robot is approximated to average of both encoder readings
 		//Sonar values are in cm, convert to mm by muliplying by 10
-		int Fsonar =  raspi_sonars[0].distance;
+		int Rsonar  =  raspi_sonars[0].distance*10;
 		
-		int Rsonar =  raspi_sonars[1].distance;;
-		int Lsonar =  raspi_sonars[2].distance;;
+		int Fsonar =  raspi_sonars[1].distance*10;
+		int Lsonar =  raspi_sonars[2].distance*10;
 		//string LIR =  Trim(lineArray[5])*10 ;//Same for IR sensor values
 		//string RIR =  Trim(lineArray[6])*10 ; 
 		cout << "  angle : " << angle << endl;// 
-		cout << "  inv_angle : " << inv_angle << endl;//
+		cout << "  left_angle : " << left_angle << endl;//
+		cout << "  right_angle : " << right_angle << endl;//
 		cout << "  Fsonar : " << Fsonar << endl;//
 		cout << "  Rsonar : " << Rsonar << endl;//
+		cout << "  Lsonar : " << Lsonar << endl;//
 		printf("convert begin \n");
 		cv::Mat Aimg(Map_Size, Map_Size, CV_64F,cv::Scalar(0.0));
+		
+		Sonars_logs[300-Yr][Xr] = 124550.0;
 		if (Fsonar < 5000){
 			
 			SonarModelArray(src,Xr,Yr,angle,Fsonar,cellsize,scale);
@@ -94,11 +99,18 @@ int onlineMaping_Array()
 			//cv::add(Aimg,Map_log_sonar,Map_log_sonar);
 			Map_log_sonar = Map_log_sonar + Aimg;
 			
+		}else	{
+			
+			SonarModelArray(src,Xr,Yr,angle,2000,cellsize,scale);
+			std::memcpy(Aimg.data, Sonars_logs, Map_Size*Map_Size*sizeof(double));
+			
+			Map_log_sonar = Map_log_sonar + Aimg;
+			
 		}
 		
 		if (Rsonar < 5000){
 			
-			SonarModelArray(src,Xr,Yr,inv_angle,Rsonar,cellsize,scale);
+			SonarModelArray(src,Xr,Yr,right_angle,Rsonar,cellsize,scale);
 			
 		
 			std::memcpy(Aimg.data, Sonars_logs, Map_Size*Map_Size*sizeof(double));
@@ -121,16 +133,18 @@ int onlineMaping_Array()
 		int Yrnext = position_y; //Yr + float((sin(CalculateRadians(angle)) * (avencoder*mm_per_tick)*scale));
 
 		//#cv2.line(map_image, (int(Xr),int(Yr)), (int(Xrnext),int(Yrnext)), 150, 1)
-		Xr = Xrnext;
-		Yr = Yrnext;
+		Xr += Xrnext;
+		Yr += Yrnext;
 		
 		exp(Map_log_sonar, Map_log_sonar2);//e的0次方等于1
 		Mat img2(Map_Size, Map_Size, CV_8UC1, cv::Scalar(0)); 
 		Mat img3(Map_Size, Map_Size, CV_8UC1, cv::Scalar(0));
 		img2 =1- (1 / ( 1 + Map_log_sonar2));
 		img3 = 1 -img2;
+		
 		//resize(src, dst, cv::Size(1000, 1000));
 		resize(img3,img3,Size(1000,1000));
+		imwrite("Map_log.png",img3*255);
 		//imshow("Map_log",img3);
 		//waitKey(0);
 		usleep(200000);
