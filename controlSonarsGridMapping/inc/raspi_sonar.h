@@ -10,7 +10,7 @@ typedef  struct{
 	
 }sonar_dis;
 
-extern sonar_dis raspi_sonars[3];
+extern sonar_dis raspi_sonars[5];
 
 extern  void *getUltrasonicThread(void *arg);
 
