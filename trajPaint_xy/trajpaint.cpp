@@ -15,43 +15,29 @@ using namespace cv;
 string Trim(string& str)
 {
  str.erase(0,str.find_first_not_of(" \t\r\n"));
-
  str.erase(str.find_last_not_of(" \t\r\n") + 1);
 
  return str;
 }
-static double CalculateRadians(int degree)
-{
-    //弧度
-    double current_angle = degree *M_PI/ 180  ;  //角度
-    return current_angle;
-}
+
 #define Map_Size  300
 char Sonars_logs[Map_Size][Map_Size]={0};
 int main()
 {
 
-	
-	int Xr = float(Map_Size/2);// #Set intial robot position
+	//设置机器人初始位置
+	int Xr = float(Map_Size/2);
 	int Yr = float(Map_Size/2);
-// 读文件
-    ifstream inFile("Data.txt", ios::in);
+    // 读文件
+    ifstream inFile("xy.txt", ios::in);
 	string lineStr;
-	vector<vector<string>> strArray;
-
+	//定义两个Mat图片
 	Mat src(Map_Size, Map_Size, CV_8UC1, cv::Scalar(0));
-	int row = Map_Size;//src.rows;//300
-    int col = Map_Size;//src.cols;//300
-	Mat Map_log_sonar = Mat(row, col, CV_8UC1,cv::Scalar(0));
-	 
-	 
-	
+	Mat Map_log_sonar = Mat(Map_Size, Map_Size, CV_8UC1,cv::Scalar(0));
+	//初始化灰色背景
 	 memset(&Sonars_logs[0][0], 127, sizeof(Sonars_logs));
 	while (getline(inFile, lineStr))
 	{
-		// 打印整行字符串
-		//	cout << lineStr << endl;
-		// 存成二维表结构
 	
 		stringstream ss(lineStr);
 		string str;
@@ -60,46 +46,21 @@ int main()
 		while (getline(ss, str, ',')){
 			lineArray.push_back(str);
 		}
-		 
-		string angle_str =  Trim(lineArray[2]) ;//Robot heading angle
-		int angle = atoi(angle_str.c_str());
-		int inv_angle = angle +30 ;//angle for rear sonar sensor
-		int left_angle = angle -30 ;
+		//分别读取x,y坐标
 		string a0 = Trim(lineArray[0]);
 		string a1 = Trim(lineArray[1]);
-		
-		
-		int avencoder = (atoi(a0.c_str()) + atoi(a1.c_str()))/2 ;//Distance travelled by robot is approximated to average of both encoder readings
-		string Fsonar_str =  Trim(lineArray[3]) ;//Sonar values are in cm, convert to mm by muliplying by 10
-		int xx = atoi(Fsonar_str.c_str())/10 ;
-		string Rsonar_str =  Trim(lineArray[4]);
-		int yy = atoi(Rsonar_str.c_str()) /10;
-		//string LIR =  Trim(lineArray[5])*10 ;//Same for IR sensor values
-		//string RIR =  Trim(lineArray[6])*10 ; 
-		cout << "  angle : " << angle << endl;// 
-		cout << "  inv_angle : " << inv_angle << endl;//
-		cout << "  x : " << xx << endl;//
-		cout << "  y : " << yy << endl;//
-		printf("convert begin \n");
+		int xx = atoi(a0.c_str()) ;
+		int yy = atoi(a1.c_str()) ; 
 		cv::Mat Aimg(Map_Size, Map_Size, CV_8UC1,cv::Scalar(0));
-		
 		Sonars_logs[Yr][Xr]  = 255;
-		
-		
-		//	Calculate new robot position from encoder readings
-		//#cv2.line(map_image, (int(Xr),int(Yr)), (int(Xrnext),int(Yrnext)), 150, 1)
 		Xr = xx;
 		Yr = yy;
-		
-		std::memcpy(Aimg.data, Sonars_logs, Map_Size*Map_Size*sizeof(unsigned char));
-		 
-		 Map_log_sonar = Aimg;
-		 Mat img3  ;
-		 resize(Map_log_sonar,img3,Size(1000,1000));
-		 imshow("Aimg",img3);
-	
-		waitKey(0);
-		
+		//数组中的数据拷贝到Mat 中
+		std::memcpy(Aimg.data, Sonars_logs, Map_Size*Map_Size*sizeof(unsigned char));		 
+		Map_log_sonar = Aimg;
+
 	}
+	imshow("traj",Map_log_sonar);
+	waitKey(0);
 }
 
