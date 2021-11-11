@@ -1,30 +1,34 @@
 """
-Move to specified pose
-Author: Daniel Ingram (daniel-s-ingram)
-        Atsushi Sakai(@Atsushi_twi)
-P. I. Corke, "Robotics, Vision & Control", Springer 2017, ISBN 978-3-319-54413-7
+移动到具体位置
+使用权重比例法
 """
 
 import matplotlib.pyplot as plt
 import numpy as np
 from random import random
+import math
 
-# simulation parameters
-Kp_rho = 9
-Kp_alpha = 35.0#15
-Kp_beta = -0.0#-3
-dt = 0.01
 
+#仿真参数
+#比例系数
+Kp_rho = 0.9
+Kp_alpha = 0.35 
+Kp_beta = 0.15 
+#时间周期
+dt = 0.3
+#最小接近距离
+limit_dis =0.3
+limit_ang =10
 show_animation = True
 
 
 def move_to_pose(x_start, y_start, theta_start, x_goal, y_goal, theta_goal):
     """
-    rho is the distance between the robot and the goal position
-    alpha is the angle to the goal relative to the heading of the robot
-    beta is the angle between the robot's position and the goal position plus the goal angle
-    Kp_rho*rho and Kp_alpha*alpha drive the robot along a line towards the goal
-    Kp_beta*beta rotates the line so that it is parallel to the goal angle
+    rho 为机器人和目标之间的距离
+    alpha  为目标相对于本身的方向方位角
+    beta 为最终角度和方位角的差
+    Kp_rho*rho   Kp_alpha*alpha 驱动机器人向目标沿直线行驶，可以取恒值
+    Kp_beta*beta 旋转角度
     """
     x = x_start
     y = y_start
@@ -37,41 +41,52 @@ def move_to_pose(x_start, y_start, theta_start, x_goal, y_goal, theta_goal):
 
     rho = np.hypot(x_diff, y_diff)
     dis = rho
-    while rho > 0.001:
+    goal_errorr = theta_goal- theta
+    #满足到达目标的最小距离和角度最小值
+    while rho > limit_dis or abs(goal_errorr)*180/3.14  > limit_ang:
         x_traj.append(x)
         y_traj.append(y)
 
         x_diff = x_goal - x
         y_diff = y_goal - y
-
-        # Restrict alpha and beta (angle differences) to the range
-        # [-pi, pi] to prevent unstable behavior e.g. difference going
-        # from 0 rad to 2*pi rad with slight turn
-
+        # 角度差
+        # 范围为[-pi, pi] 
+        # 从 0 到 2*pi 
+        #求两点距离
         rho = np.hypot(x_diff, y_diff)
-        alpha = (np.arctan2(y_diff, x_diff)
-                 - theta + 0 ) #% (2 * np.pi) - np.pi
+        #求两点角度
+        gama =np.arctan2(y_diff, x_diff)
+        alpha = gama - theta   
+        #角度归一化
         if  (alpha < -np.pi):                    
             alpha = alpha + 2 * np.pi 
         elif(alpha > np.pi):
             alpha = alpha - 2 * np.pi 
-        #beta = (theta_goal - theta - alpha + np.pi) % (2 * np.pi) - np.pi
-        beta = theta_goal - theta - alpha
+
+        beta = theta_goal - gama
+        goal_errorr = theta_goal- theta
         if  (beta < -np.pi):                     
             beta = beta + 2 * np.pi 
         elif(beta > np.pi):
-            beta = beta - 2 * np.pi        
+            beta = beta - 2 * np.pi  
+        #这里没用到
         if rho > dis/2:
             v = Kp_rho * rho
-        else :
-            v = 0.5
-        v = Kp_rho * rho
-        w = Kp_alpha * alpha + Kp_beta * beta
         
-        #if alpha > np.pi / 2 or alpha < -np.pi / 2:
-            #v = -v
-        print(rho,alpha*180/3.14,beta*180/3.14,v,w,x,y,theta*180/3.14)
+        #使用匀速行驶
+        v = 0.50
+        if(rho < limit_dis):
+            v = 0
+        #权重先后算法函数
+        w = Kp_alpha * alpha* rho + Kp_beta * beta
+
+        print("dis,v,w,theta,oritation,goal")
+        print(rho,v,w,theta*180/3.14,gama*180/3.14,theta_goal*180/3.14)
         theta = theta + w * dt
+        if  (theta < -np.pi):                     
+            theta = theta + 2 * np.pi 
+        elif(theta > np.pi):
+            theta = theta - 2 * np.pi 
         x = x + v * np.cos(theta) * dt
         y = y + v * np.sin(theta) * dt
         
@@ -82,6 +97,7 @@ def move_to_pose(x_start, y_start, theta_start, x_goal, y_goal, theta_goal):
             plt.arrow(x_goal, y_goal, np.cos(theta_goal),
                       np.sin(theta_goal), color='g', width=0.1)
             plot_vehicle(x, y, theta, x_traj, y_traj)
+    
 
 
 def plot_vehicle(x, y, theta, x_traj, y_traj):  # pragma: no cover
