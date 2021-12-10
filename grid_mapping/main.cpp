@@ -86,6 +86,9 @@ int single_point()
 
 int main(int argc ,char *argv[])
 {
-	offline_test_Array();
+	//超声波雷达测试 
+	//offline_test_Array();
+      //激光雷达单帧测试
+	offline_lidar_Array();
 
 }
