@@ -16,4 +16,4 @@ follow the point trajactory;
 2程序读取航点坐标并调用算法跟随轨迹
 3 测试里程计和IMU分辨率效果
 ## odom path follow
-[odom_map_traj](!https://github.com/horo2016/openCRobotics/edit/master/pathFollow_Imu/Map_traj.png)
+![odom_map_traj](https://github.com/horo2016/openCRobotics/edit/master/pathFollow_Imu/Map_traj.png)
