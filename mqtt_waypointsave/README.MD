@@ -10,5 +10,6 @@ sudo apt-get install mosquitto-clients
 cat sn.txt查看 唯一序列号，将该序列号添加到网站上。
 重新执行sudo  ./waypoint 并在后台运行，云平台端显示在线后，打开路径规划菜单，规划完路径后，单击【保存】后可在程序所在路径下获取
 waypoints.csv 内含经纬度路径信息.
+Mqtt/lib 下有不同架构不同的库，注意区分
 联系qq:839602830
 v:13699147102
