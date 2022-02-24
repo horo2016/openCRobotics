@@ -21,8 +21,8 @@
 #define TURNROUND "turnround"
 #define RUNFORWARD "runforward"
 #define AVOIDANCE "avoidance"
-//ÐèÒªµÄÊ±¼ä
-#define MINS 2 //3·ÖÖÓ
+//éœ€è¦çš„æ—¶é—´
+#define MINS 2 //3åˆ†é’Ÿ
 #define DELAY_TIME (60*MINS)
 
 char chargename[17]="1234567890123456";
@@ -90,8 +90,8 @@ int get_strchr_len(char *str, char c)
 }
 
 
-//´ò¿ªfileNameÖ¸¶¨µÄÎÄ¼þ£¬´ÓÖÐ¶ÁÈ¡µÚlineNumberÐÐ
-//·µ»ØÖµ£º³É¹¦·µ»Ø1£¬Ê§°Ü·µ»Ø0
+//æ‰“å¼€fileNameæŒ‡å®šçš„æ–‡ä»¶ï¼Œä»Žä¸­è¯»å–ç¬¬lineNumberè¡Œ
+//è¿”å›žå€¼ï¼šæˆåŠŸè¿”å›ž1ï¼Œå¤±è´¥è¿”å›ž0
 int get_file_line(char *fileName,int lineNumber)
 {
     FILE *filePointer;
@@ -115,12 +115,12 @@ int get_file_line(char *fileName,int lineNumber)
         {
             return 0;
         }
-        i++;//²îµãÓÖÍü¼Ç¼ÓÕâÒ»¾äÁË
+        i++;//å·®ç‚¹åˆå¿˜è®°åŠ è¿™ä¸€å¥äº†
     }
 
 
 
-    fgets(buffer,sizeof(buffer),filePointer); //¶ÁµÚbai10ÐÐ
+    fgets(buffer,sizeof(buffer),filePointer); //è¯»ç¬¬bai10è¡Œ
     printf("%s", buffer );
     sub_str = strstr(buffer, "Serial");
 
@@ -195,13 +195,13 @@ void User_MsgCtl(MQTT_USER_MSG  *msg)
 	switch(msg->msgqos)
 	{
 		case 0:
-			printf("MQTT>>æ¶ˆæ¯è´¨é‡: QoS0\n");
+			printf("MQTT>>å¨‘å Ÿä¼…ç’ã„©å™º: QoS0\n");
 			break;
 		case 1:
-			printf("MQTT>>æ¶ˆæ¯è´¨é‡: QoS1\n");
+			printf("MQTT>>å¨‘å Ÿä¼…ç’ã„©å™º: QoS1\n");
 			break;
 		case 2:
-			printf("MQTT>>æ¶ˆæ¯è´¨é‡: QoS2\n");
+			printf("MQTT>>å¨‘å Ÿä¼…ç’ã„©å™º: QoS2\n");
 			break;
 		default:
 			printf("MQTT>>error quantity\n");
@@ -240,14 +240,14 @@ void User_MsgCtl(MQTT_USER_MSG  *msg)
 
 
 #endif
-	// å¤„ç†åŽé”€æ¯æ•°æ®
+	// æ¾¶å‹­æ‚Šéšåº¨æ”¢å§£ä½¹æšŸéŽ¹ï¿½
 	
 	msg->valid  = 0;
 }
 #endif
 
 
-/* ÈÕÖ¾Ê±¼ä´Á,¾«È·µ½ºÁÃë */
+/* æ—¥å¿—æ—¶é—´æˆ³,ç²¾ç¡®åˆ°æ¯«ç§’ */
 char* get_stime(void)
 { 
     static char timestr[200] ={0};
@@ -305,12 +305,18 @@ char init_config_ID()
     fread(buffer,sizeof(buffer),1,filePointer);  
    get_value_from_cmdline(buffer,"NAME",typeBuffer);
    printf("type:%s \n",typeBuffer);
-   if(strstr("\"Ubuntu\"",typeBuffer)!= NULL)//ubuntu
+	  if(strstr("\"Raspbian GNU/Linux\"",typeBuffer)!= NULL)//ubuntu
    	{
-		  if(!access("sn.txt",R_OK))//ÒÑ¾­´æÔÚÐòÁÐºÅ ²»ÄÜÔÚÉú³ÉÐòÁÐºÅÁË
+		 
+        fclose(filePointer);
+              return 0;//å­˜åœ¨æ ‘èŽ“æ´¾
+   }
+  else  if(strstr("\"Ubuntu\"",typeBuffer)!= NULL)//ubuntu
+   	{
+		  if(!access("sn.txt",R_OK))//å·²ç»å­˜åœ¨åºåˆ—å· ä¸èƒ½åœ¨ç”Ÿæˆåºåˆ—å·äº†
 		  	{
 		  	  fclose(filePointer);
-              return 1;//´æÔÚ	 
+              return 1;//å­˜åœ¨	 
 		  	}
 		struct timeval tv;
 		struct timezone tz;
@@ -371,7 +377,7 @@ void *Mqtt_ClentTask(void *argv)
 {
   if(0 ==  init_config_ID()){
       memset(chargename,0,16);
-      get_file_line("/proc/cpuinfo",42);//Ê÷Ý®ÅÉ×¨ÓÃ
+      get_file_line("/proc/cpuinfo",42);//æ ‘èŽ“æ´¾ä¸“ç”¨
       char _buffer[0xff]={0};
  	  sprintf(_buffer,"echo \"%s\" > sn.txt",chargename);
  	  system(_buffer);
