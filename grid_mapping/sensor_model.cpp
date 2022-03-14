@@ -303,7 +303,7 @@ int LidarModelArray(cv::Mat occmap,int Xr,int Yr,int Rangle,int SonarDist,int ce
 			Px = 0.5 + Ptheta;
 			//printf("Px:%f \n",Px);
             logPx = log(Px/(1-Px));
-            Sonars_logs[Yimg][Ximg] = logPx;
+            Sonars_logs[Yimg][Ximg] += logPx;
 			//printf("logPx:%f \n",logPx);
            // #occ = np.append(occ,[x],0)
 		}
@@ -311,7 +311,7 @@ int LidarModelArray(cv::Mat occmap,int Xr,int Yr,int Rangle,int SonarDist,int ce
             Px = 0.5 - P;
 			//printf("Px free:%f \n",Px);
             logPx = log(Px/(1-Px));
-            Sonars_logs[Yimg][Ximg] = logPx;
+            Sonars_logs[Yimg][Ximg] += logPx;
 			//printf("logPx free:%f \n",logPx);
 			//printf("p:%d,%d \n",Yimg,Ximg);
 		}
