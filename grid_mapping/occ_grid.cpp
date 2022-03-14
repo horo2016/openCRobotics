@@ -161,10 +161,11 @@ int offline_lidar_Array()
 		float Fdis = dis[i];
 		if (Fdis < 5000){
 			LidarModelArray(src,Xr,Yr,angle,Fdis,cellsize,scale);
-			std::memcpy(Aimg.data, Sonars_logs, Map_Size*Map_Size*sizeof(double));
-			Map_log_sonar = Map_log_sonar + Aimg;
+			
 		}
 	}
+	std::memcpy(Aimg.data, Sonars_logs, Map_Size*Map_Size*sizeof(double));
+			Map_log_sonar = Map_log_sonar + Aimg;
 	exp(Map_log_sonar, Map_log_sonar2);//e的0次方等于1
 	Mat img2(Map_Size, Map_Size, CV_8UC1, cv::Scalar(0)); 
 	Mat img3(Map_Size, Map_Size, CV_8UC1, cv::Scalar(0));
