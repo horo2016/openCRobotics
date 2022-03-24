@@ -287,15 +287,18 @@ int LidarModelArray(cv::Mat occmap,int Xr,int Yr,int Rangle,int SonarDist,int ce
             theta = theta + 360 ;
         else if( theta > 180)
             theta = theta - 360 ;
-		double    sigma_t = 5;
-        double A = 1 / (sqrt(2*M_PI*sigma_t));
-        double C = pow((theta/sigma_t),2);
-        double B = exp(-0.5*C);
-        double Ptheta = A*B ;
-		//小数点有偏差
-		
-        double Pdist = (SonarDist - dist/2)/SonarDist;
-        double P = (Pdist*2)*Ptheta;
+		double    sigma_t = 1;//标准正太分布
+        double A = 1 / (sqrt(2*M_PI)*sigma_t);//系数A =1 /(σ*sqrt(2Π))
+        double C = pow((theta/sigma_t),2);//u =0;
+        double B = exp(-0.5*C);//exp(-0.5*aqrt(θ/σ,2))  θ是变量
+        double Ptheta = A*B ;//θ=0时概率最大0.4 θ=+-0.6时概率为0.8*0.4=0.32 值域[0.32,0.4]
+		//小数点有偏差	
+        double Pdist = (SonarDist - dist/2)/SonarDist;//取值0.5~1之间 dist 越小，概率越大距离雷达越近说明是空闲
+        double P = (Pdist)*Ptheta;//(0.5,1)*(0.32~0.4)==0.16~0.4
+		if(P<0.1)
+			P=0.1;
+		if(P>0.49)
+			P=0.4;
 		double Px=0,logPx=0 ;
 		//printf("dist:%f %d %d\n",dist,SonarDist,thick);
 		if (dist > (SonarDist - thick) && dist < (SonarDist + thick))// #occupied region
