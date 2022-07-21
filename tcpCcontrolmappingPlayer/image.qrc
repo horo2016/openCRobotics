@@ -1,0 +1,17 @@
+<RCC>
+    <qresource prefix="/">
+        <file>image/open_focus.png</file>
+        <file>image/open_normal.png</file>
+        <file>image/pause_focus.png</file>
+        <file>image/pause_normal.png</file>
+        <file>image/pause1_normal.png</file>
+        <file>image/start_focus.png</file>
+        <file>image/start_normal.png</file>
+        <file>image/start1_normal.png</file>
+        <file>image/stop_focus.png</file>
+        <file>image/stop_normal.png</file>
+        <file>image/stop1_normal.png</file>
+        <file>image/robot.png</file>
+        <file>image/loc_goal.png</file>
+    </qresource>
+</RCC>
