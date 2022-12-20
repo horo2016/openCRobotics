@@ -14,4 +14,4 @@ opencv
 
 #  已经将该工程使用 分布式开发框架进行拆解  ，实现模块化和独立积木化，这样开发者更像积木一样可将模块拼接搭建，快速学习。
 
-https://github.com/horo2016/easyMqos
+https://github.com/horo2016/easyMQOS
