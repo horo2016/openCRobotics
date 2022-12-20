@@ -11,3 +11,7 @@ opencv
 ![image](https://github.com/horo2016/openCRobotics/raw/master/breezyslam_rovi/SLAM-3.png)
 ![image](https://github.com/horo2016/openCRobotics/blob/master/dwa_base_control/dwa2.jpg)
 ![image](https://github.com/horo2016/openCRobotics/blob/master/tcpCcontrolmappingPlayer/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20220721113330.png)
+
+#  已经将该工程使用 分布式开发框架进行拆解  ，实现模块化和独立积木化，这样开发者更像积木一样可将模块拼接搭建，快速学习。
+
+https://github.com/horo2016/easyMqos
