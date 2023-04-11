@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+    <title>户外机器人Vos Web Ground Planner</title>
+    <!--引用百度地图API-->
+  
+	<!--<script type="text/javascript" src="http://api.map.baidu.com/getscript?v=1.4"></script>-->
+	<script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=Epb0QEBjlMeHa0elsCGEQCUsVhpFfWCK"></script>
+
+
+   <style>
+        body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+        }
+		#stick-module,
+        #pedal-module,
+        #collective-module {
+            width: 100%;
+            text-align: center;
+        }
+
+        #cm-svg,
+        #compass-svg,
+        #stick-svg,
+        #pedal-svg,
+        #collective-svg {
+            width: 100%;
+        }
+	    #heading-container {
+            width: 100%;
+			height:100%;
+			
+        }
+	   #speed-container {
+            width: 100%;
+			height:100%;
+			
+        }
+		#horizon-container {
+            width: 100%;
+			height:50%;
+			
+        }
+	   #pedal-container {
+            width: 100%;
+			height:50%;
+			
+        }
+        .row-top {
+            margin-top: 50px;
+        }
+       .container-fluid {
+            margin-top: 50px;
+			
+			
+        }
+        .row-standard {
+            margin-top: 15px;
+			display: inline-block;
+			display: flex;
+           flex-direction: row;
+        }
+
+        .jean-navbar {
+            z-index: 100;
+        }
+
+        h1, h2,h4 {
+            text-align: center;
+            color: #40CAB4;
+            font-weight: bold;
+            font-family: "Calibri";
+        }
+		
+
+
+     
+    </style>
+	 </head>
+  <body>
+<div style="width:98%;height:100%;border: solid white 2px;font-size:12px;overflow:auto;background:black">
+<h3 style="text-align:center;color:white">Web Ground Planner 简易版</h3>
+	
+	<div style="width:29.3%;height:100%;border: solid red 1px;font-size:12px;overflow:auto;float:right"class="wrapper wrapper-content animated fadeInRight">
+	<div style="width:320px;height:240px;border: solid red 1px">
+	   <img align="center" src="pic.png" width="320px" height="240px"  id="oImg"  style="margin: 0 auto;" />
+	</div>
+	<table border="1" cellspacing="0" cellpadding="1" height="1px" width="40px"
+			   style="height:2px;"
+			class="table table-striped table-bordered table-hover dataTables-example">
+				<tr>
+		<font color="#FFffff">-->[使用说明：右击选择航点保存，启动]<--</font> 
+		</br>
+		<font color="#FF0000">请输入16位的设备ID:</font>
+		 <input type='text' id='devid' value="1654530967979917" />
+		 <font color="#FF0000">请选择MQTT SERVER:</font>
+		 
+		    <select id="d6" style="width:100px;">
+			<option value="2">终端</option>
+            <option value="1">远端</option>
+            
+            </select>
+	     <button style="background-color: #00C0CB;" id="confirm" onclick="confirm()">确定</button>
+		 </br>
+		 <font color="#FF0000">当前坐标:</font> <input style="color:white;" type='text' id='lnglati' disabled />
+		 <font color="#FFffff">next坐标:</font> <input type='text' id='nextwaypoint' disabled />
+		 </br>	
+         <font color="#FFffff">当前航向:</font> <input type='text' id='heading' disabled />
+          <font color="#FFffff">目标航向:</font><input type='text' id='targetheading' disabled />			 
+		 </br>
+         <font color="#FFffff">航点:</font><input id="waypoint" type="text" value="116.238928,39.738408"/>    <!--value="116.715375, 39.515095"-->
+         <font color="#FFffff">航点距离:</font><input id="distance" type="text" value="0"/>       <!--value="115.402794, 27.738408"-->
+        </br>
+		<font color="#FFffff">当前速度:</font><input id="speed" type="text" value="0"/>    <!--value="116.715375, 39.515095"-->
+        <font color="#FFffff">GPS速度:</font><input id="gpsvelocity" type="text" value=""/>    <!--value="116.715375, 39.515095"-->
+        </br>
+		<font color="#FFffff">地磁计方向:</font><input id="IMUheading" type="text" value=" "/> 
+        <font color="#FFffff">GPS方向:</font><input id="gpsheading" type="text" value=" "/>       <!--value="115.402794, 27.738408"-->
+        </br>
+		<font color="#FFffff">线加速度:</font><input id="velacc" type="text" value="0"/>    <!--value="116.715375, 39.515095"-->
+        <font color="#FFffff">z轴角速度:</font><input id="angspeed" type="text" value="0"/>       <!--value="115.402794, 27.738408"-->
+        </br>
+		<font color="#FFffff">电池电压:</font><input id="vol" type="text" value="12v"/>    <!--value="116.715375, 39.515095"-->
+        <font color="#FFffff">wifi强度:</font><input id="wifistrength" type="text" value="0"/>       <!--value="115.402794, 27.738408"-->
+        </br>
+		<font color="#FFffff">cpu温度:</font><input id="cputem" type="text" value="0"/>
+		<font color="#FFffff">cpu负载:</font><input id="cpuload" type="text" value="0"/>
+		</br>
+   			 <input type='text' id='devid' value="1654530967979917" />
+		 <button id="btnconnect" onclick="connectserver()">连接机器人</button>
+		 <button id="btndisconnect" onclick="disconnectserver()">断开机器人</button>
+		 <button id="savepoint" onclick="savepoint()">保存</button>
+		  <button id="savepoint" onclick="clearpoint()">清除</button>
+		  <button id="btnDri" onclick="coordinateSend()">下发启动</button>
+		  <button id="btnstop" onclick="carstop()">停止导航</button>
+		</br>
+		 <button id="btndisconnect" onclick="runforward()">前进</button>
+		
+		 <button id="savepoint" onclick="turnround()">原地左转弯</button>
+		  <button id="savepoint" onclick="turnround_right()">原地右转弯</button>
+		 	</br>
+			 <input type='text' id='setvel' value="0.1" /> 
+			 <button id="setspeed" onclick="set_speed()">设置速度</button>
+			</br>
+	</tr>
+		 <font color="#FFffff">状态:</font><img id="state" src="redball.png"></img>
+			
+		</table>
+	</div>
+	  <!--仪表容器  -->
+ <div style="width:19.8%;height:800px;border:solid blue 1px;font-size:12px;overflow:auto;float:left"id="metreIMU"> 
+ 	 <div class="col-xs-12 col-sm-4 col-md-2">
+			<div id="horizon-container"></div>
+	</div>
+	<div class="row row-standard">
+					<div class="col-xs-12 col-sm-4 col-md-2">
+							<div id="pedal-container"></div>
+				</div>
+				 <div class="col-xs-12 col-sm-4 col-md-2">
+							<div id="speed-container"></div>
+				   </div>
+	   
+	 </div>
+	 <div class="col-xs-12 col-sm-4 col-md-2">
+                <div id="heading-container"></div>
+       </div>
+	 </div>
+    <!--百度地图容器   300px  改成了400px 变大了-->
+     <div style="width:49.8%;height:800px;border:solid blue 1px;font-size:12px;overflow:auto;float:left"id="map"> 
+	 </div>
+	
+</div>
+<!---
+<div style="width:100%;height:100%;border: solid black 2px;font-size:12px;overflow:auto">
+   <section id="jean-navbar-container"></section>
+
+
+	 
+</div>	 
+ --->
+	 
+
+	<script src="../js/jquery.min.js?v=2.1.4"></script>
+	 <script src="../js/mqttws31.js"></script>
+
+	<script src="../js/plugins/jeditable/jquery.jeditable.js"></script>
+	<script	src="../js/plugins/dataTables/jquery.dataTables.js"></script>
+	<script src="../js/jean-flight-indicator.js" defer="true"></script>
+    <script src="../js/jean-navbar.js"></script>	
+	<script src="../js/jquery.flightindicators.js"></script>
+  </body>
+<script type="text/javascript">
+//1654530967979917
+
+	
+     var  IMUheading,gpsheading =6,fusionheading,gpsvelocity;//document.getElementById("heading").value ;
+	 var  cpu_collectiveI = 1,tempcollectiveI2 = 0.80;//从下到上 1-0.0  
+	 var  speedI = 0,roll =0,pitch =0;
+     var  cpuload = 0,cputemp =0,wifisignal =10;
+	 var  velspeed = 0,angspeed =0;
+		  
+		var isStarted = true, interval;
+		
+	  //var stick, pedal, collective;
+
+    
+        
+		
+	   
+		
+	        var stateImg=document.getElementById("state");
+            var devid ="1234567890123456";//改成设备的id号  16位
+			var hostip = "www.woyilian.com",
+			 finalIp,
+			 lonti= 116.238982,
+			 lati = 40.0933592,
+			 connetflg =0,
+            port = 8083,client,
+            clientId = 'client-mao21804',
+            timeout = 5,
+            keepAlive = 50,
+            cleanSession = false,
+            ssl = false,
+			waypoint_lonti= 116.238982,
+			waypoint_lati = 40.0933592,
+			topic = devid+ '/state/gps';
+			var isvalid =0;
+			var contgps =0;
+			var urlPath = window.document.location.href;
+			 var docPath = window.document.location.pathname; //文件在服务器相对地址 /ISV/demo.aspx
+            var index = urlPath.indexOf(docPath);
+            var serverPath = urlPath.substring(0, index);
+			var serverip = serverPath.substring(7);
+			console.log("termianip:"+serverip);
+			var serverSelect ;
+         //   topic = '1110000001001001/state/gps';
+		 
+		 
+		 
+		 	var map;
+		    initMap();
+		    var btn_cnt=0;
+			var config_ok =0;
+			
+			function confirm() {
+				serverSelect =document.getElementById("d6").value;
+				
+				console.log("serverSelect :"+serverSelect);
+				if(serverSelect==1){
+				finalIp = hostip;
+				}
+				else {
+				hostip = serverip;
+				}
+				console.log("finalIp:"+hostip);
+				devid =document.getElementById("devid").value;
+				if(strlen(devid)!=16){
+					alert("请保证设备号为16位！");
+					return;
+				}
+				document.getElementById("confirm").style.backgroundColor = "#FFC0CB";
+
+				config_ok =1;
+				}
+			function MQTTconnect(){
+			
+			 
+			devid =document.getElementById("devid").value;
+			topic = devid+ '/state/gps';
+			console.log(topic);
+			
+			
+			client = new Paho.MQTT.Client(hostip, Number(port), clientId);
+			client.onConnectionLost = onConnectionLost;//注册连接断开处理事件
+			client.onMessageArrived = onMessageArrived;//注册消息接收处理事件
+			client.connect({onSuccess:onConnect});//连接服务器并注册连接成功处理事件
+			};
+			
+	
+		
+		
+
+			function onConnect() {
+			  // Once a connection has been made, make a subscription and send a message.
+			  console.log("onConnect:"+topic);
+			  connetflg =1;
+			  stateImg.src="greenball.png";
+			  client.subscribe(topic);
+			
+			};
+			function onConnectionLost(responseObject) {
+			  stateImg.src="redball.png";
+			  if (responseObject.errorCode !== 0)
+				console.log("onConnectionLost:"+responseObject.errorMessage);
+				console.log("连接已断开");
+			};     
+			function send(){
+			     console.log("into send message");
+			     //json对象
+                var jsoninf={ "gpsend":"1" ,"endlonti":"Bill" , "endlati":"Gates" };
+			    sendtopic = devid +'/download/position';
+				    //可以如下修改firstName属性的值
+               
+
+				var strs =new Array();
+			
+                var s = document.getElementById("end").value;
+				strs = s.split(",");
+				 jsoninf["endlonti"]=strs[0]+'';
+				 jsoninf["endlati"]=strs[1]+'';
+				 				
+				ss = JSON.stringify(jsoninf);
+				console.log(jsoninf);
+                if(s){
+                   // s = "{time:"+new Date().Format("yyyy-MM-dd hh:mm:ss")+", content:"+(s)+", from: web console}";
+                    message = new Paho.MQTT.Message(ss);
+                    message.destinationName = sendtopic;
+                        client.send(message);
+                       
+                }
+				
+            }
+            
+			function onMessageArrived(message) {
+			//  console.log("onMessageArrived:"+message.payloadString);
+			  //add parse code 
+			//  var t = message.payloadString;
+			    console.log("收到消息:"+message.payloadString);
+                console.log("主题："+message.destinationName);
+				console.log("长度："+strlen(message.payloadString));
+				if(strlen(message.payloadString)>60)
+				{
+				//  heading.update(headingI);//0~360 00
+				   var temp1 = jQuery.parseJSON(message.payloadString);
+
+				//	console.log("解析出来的：lng："+temp1.lonti); 
+				//	console.log("解析出来的：lati："+temp1.lati);
+				    lonti = temp1.lonti ;
+					lati = temp1.lati;
+					gpsheading=temp1.gpsheading;
+					gpsvelocity =temp1.gpsvelocity;
+					waypoint_lonti = temp1.nextwaypoint_lon;
+					waypoint_lati =  temp1.nextwaypoint_lat;
+					//IMUheading =temp1.heading;
+				    //roll = temp1.roll;
+					//pitch =temp1.pitch;
+					//cpuload =temp1.cpuload;
+				  //  cputemp = temp1.cputemp;
+					//wifisignal =temp1.wifisignal;
+					//velspeed = speedI =temp1.velspeed/10;
+					//angspeed = temp1.angspeed;
+					
+					//$('#IMUheading').val(IMUheading);
+					//$('#wifistrength').val(wifisignal);
+					//$('#cputem').val(cputemp);
+					//$('#cpuload').val(cpuload);
+					$('#gpsvelocity').val(gpsvelocity);
+					//$('#angspeed').val(angspeed);
+					//map.centerAndZoom(new BMap.Point(lonti,lati),15);
+					if(connetflg == 1)
+					{
+						addMarkerlat(lonti,lati,gpsheading);
+						addMarkerlat_waypoint(waypoint_lonti,waypoint_lati,gpsheading);
+					}
+					var loc_gps =  lonti.toString()+','+lati.toString();
+					 
+					 $('#lnglati').val(loc_gps);
+					 $('#gpsheading').val(gpsheading);
+					   
+					 isvalid =1;
+				
+				}
+				//heading.update(IMUheading);//0~360 00
+				//cpu_collectiveI = 1.05-cpuload/100;
+				//tempcollectiveI2 = 1-cputemp/100;
+				//pedal.update(cpu_collectiveI, tempcollectiveI2);
+			///	speed.update(speedI );
+			//	horizon.update(pitch,roll);
+			
+			};
+	function connectserver() {
+		if(config_ok !=1){
+		   alert("请先配置(保证设备号为16位！)");
+					return;
+		}
+			 MQTTconnect();
+			}
+	function disconnectserver() {
+	    connetflg =0;
+		window.clearInterval(window.tester);
+		client.disconnect();
+
+	 }
+		
+  //计算字符串的长度
+		function strlen(str){
+			var len = 0;
+			for (var i=0; i<str.length; i++) { 
+			 var c = str.charCodeAt(i); 
+			//单字节加1 
+			 if ((c >= 0x0001 && c <= 0x007e) || (0xff60<=c && c<=0xff9f)) { 
+			   len++; 
+			 } 
+			 else { 
+			  len+=2; 
+			 } 
+			} 
+			return len;
+		}
+
+    //创建和初始化地图函数：
+    function initMap(){
+      createMap();//创建地图
+      setMapEvent();//设置地图事件
+      addMapControl();//向地图添加控件
+	    map.addControl(new BMap.NavigationControl());               // 添加平移缩放控件
+		map.addControl(new BMap.ScaleControl());                    // 添加比例尺控件
+		map.addControl(new BMap.OverviewMapControl());              //添加缩略地图控件
+		   
+      addMapOverlay();//向地图添加覆盖物
+	  // setInterval( "addMapOverlay()", 1000);
+    }
+    function createMap(){ 
+      map = new BMap.Map("map"); 
+      map.centerAndZoom(new BMap.Point(lonti,lati),8);//等级1-15
+    }
+    function setMapEvent(){
+      map.enableScrollWheelZoom();
+      map.enableKeyboard();
+      map.enableDragging();
+      map.enableDoubleClickZoom()
+    }
+    function addClickHandler(target,window){
+      target.addEventListener("click",function(){
+        target.openInfoWindow(window);
+      });
+    }
+    function addMapOverlay(){
+      var markers = [
+        {content:"编号:100110016",title:"智能机器人",imageOffset: {width:0,height:3},position:{lat:lati,lng:lonti}}
+      ];
+	  var iconip = "car.png";
+	  var myIcon = new BMap.Icon(iconip, new BMap.Size(20, 30), {
+				offset: new BMap.Size(0,3),
+				anchor:new BMap.Size(15,15)
+				
+			});
+
+    var point = new BMap.Point(markers[0].position.lng,markers[0].position.lat);
+    var marker = new BMap.Marker(point,{icon:myIcon,rotation:0});
+          
+		   
+		
+        var label = new BMap.Label(markers[0].title,{offset: new BMap.Size(25,5)});
+        var opts = {
+          width: 200,
+          title: markers[0].title,
+          enableMessage: false
+        };
+       // var infoWindow = new BMap.InfoWindow(markers[0].content,opts);
+        marker.setLabel(label);
+		
+       // addClickHandler(marker,infoWindow);
+        map.addOverlay(marker);
+      }
+    
+    //向地图添加控件
+    function addMapControl(){
+      var scaleControl = new BMap.ScaleControl({anchor:BMAP_ANCHOR_BOTTOM_LEFT});
+      scaleControl.setUnit(BMAP_UNIT_IMPERIAL);
+      map.addControl(scaleControl);
+      var navControl = new BMap.NavigationControl({anchor:BMAP_ANCHOR_TOP_LEFT,type:BMAP_NAVIGATION_CONTROL_LARGE});
+      map.addControl(navControl);
+      var overviewControl = new BMap.OverviewMapControl({anchor:BMAP_ANCHOR_BOTTOM_RIGHT,isOpen:true});
+      map.addControl(overviewControl);
+    }
+
+	  /*my97时间选择控件--开始*/
+		var md=""; //第二个输入框最大值的全局变量
+      	//第一个输入框选择好日期的时候操作
+      	function pickedFunc(){
+      		var Y=$dp.cal.getP('y');
+      		var M=$dp.cal.getP('M');
+      		var D=$dp.cal.getP('d');
+      		var H=$dp.cal.getP('H');
+      		var M1=$dp.cal.getP('m');
+      		var S=$dp.cal.getP('s');
+      		H=parseInt(H)+2;//相差只能是两小时
+      		M=parseInt(M)-1;
+      		D=parseInt(D);
+      		H=parseInt(H);
+      		M1=parseInt(M1);
+      		S=parseInt(S);
+      		var d = new Date();
+			d.setFullYear(Y,M,D); //设置时间
+			d.setHours(H,M1,S);
+			var nowDate=new Date();　
+			//跟现在的时间比较，如果算出来的值大于现在时间，修改全局变量md为现在时间。否则为算出来的时间。
+			if(nowDate<=d){
+				md="";
+			}else{
+				var month=d.getMonth()+1; //月份的范围是（0到11）;
+				md=d.getFullYear()+"-"+month+"-"+d.getDate()+" "+H+":"+M1+":"+S; //直接把d给过去会有问题，所以拼成字符串发过去
+			}
+		}
+		//第一个清空的时候的操作
+		function clearedFunc(){
+			md= "";
+		}
+		//给第二个输入框定义规则
+		function picker2rule(ele){
+			if(md == ""){
+				WdatePicker({el:ele,minDate:'#F{$dp.$D(\'datepicker1\')}',maxDate:'%y-%M-%d %H:%m:%s',dateFmt:'yyyy-MM-dd HH:mm:ss'});
+			}else{
+				WdatePicker({el:ele,minDate:'#F{$dp.$D(\'datepicker1\')}',maxDate:md,dateFmt:'yyyy-MM-dd HH:mm:ss'});
+			}
+		}
+   ////////////////********************************////map   
+   //********************************************/////
+      	////////////***********************************/
+		// 获取随机数
+		function getRandom(n){
+			return Math.floor(Math.random()*n+1)
+		}
+		//在轨迹点上创建图标，并添加点击事件，显示轨迹点信息。points,数组。
+		function addMarker(points){
+			var pointsLen = points.length;
+			if(pointsLen == 0){
+				return;
+			}
+			var myIcon = new BMap.Icon("http://api.map.baidu.com/lbsapi/createmap/images/icon.png", new BMap.Size(5, 5), {
+				offset: new BMap.Size(5, 5) 
+			});
+			// 创建标注对象并添加到地图   
+			for(var i = 0;i <pointsLen;i++){
+				var point = new BMap.Point(points[i].lng,points[i].lat);
+				var marker = new BMap.Marker(point, {icon: myIcon});
+				map.addOverlay(marker); 
+			}
+		}
+			//在轨迹点上创建图标，并添加点击事件，显示轨迹点信息。points,数组。
+			var last_lng,last_lat,last_heading,last_marker;
+			 var first_init =0;
+		function addMarkerlat(lng,lat,heading){
+		
+		    var iconip = "car.png";
+			
+			var myIcon = new BMap.Icon(iconip, new BMap.Size(20, 25), {
+				offset: new BMap.Size(0,3) 
+			});
+			// 创建标注对象并添加到地图   
+		    if(first_init ==0){
+			  first_init =1;
+			 }
+			else  if(first_init ==1){
+			  
+			   console.log("remove ");
+			   last_marker.remove();
+			   map.removeOverlay(last_marker); 
+			   addLine2point2(last_lat,last_lng,lat,lng);
+			 }
+			 
+			 last_lng = lng;
+			 last_lat = lat;
+			 last_heading = heading;
+			 
+			var point = new BMap.Point(lng,lat);
+			var marker = new BMap.Marker(point, {icon: myIcon,rotation:heading});
+			last_marker = marker;
+			
+			
+			map.addOverlay(marker); 
+			
+		} 
+		function addMarkerlat_waypoint(lng,lat,heading){
+		
+			var myIcon = new BMap.Icon("http://api.map.baidu.com/lbsapi/createmap/images/icon.png", new BMap.Size(5, 5), {
+				offset: new BMap.Size(5, 5) 
+			});
+		
+		 last_lng = lng;
+		 last_lat = lat;
+		 last_heading = heading;
+		 
+		var point = new BMap.Point(lng,lat);
+		var marker = new BMap.Marker(point, {icon: myIcon,rotation:0});
+		 
+
+		map.addOverlay(marker); 
+		
+	} 
+		//添加线
+		function addLine(points){
+			var linePoints = [],pointsLen = points.length,i,polyline;
+			if(pointsLen == 0){
+				return;
+			}
+			// 创建标注对象并添加到地图   
+			for(i = 0;i <pointsLen;i++){
+				linePoints.push(new BMap.Point(points[i].lng,points[i].lat));
+			}
+			polyline = new BMap.Polyline(linePoints, {strokeColor:"red", strokeWeight:2, strokeOpacity:0.5});   //创建折线
+			map.addOverlay(polyline);   //增加折线
+		}
+		//添加两点线
+		function addLine2point2(lat_pre,longt_pre,lat,longt){
+		    var pointa = {"lng":longt_pre,"lat":lat_pre}
+			var pointb = {"lng":longt,"lat":lat}
+			var makerPoints = [];
+			var newLinePoints = [];
+			var len;
+			var points = [];
+		//	makerPoints.push(pointa);	
+          //  makerPoints.push(pointb);				
+			//addMarker(makerPoints);//增加对应该的轨迹点
+			points.push(pointa);
+			points.push(pointb);
+			var linePoints = [],pointsLen = points.length,i,polyline;
+			if(pointsLen == 0){
+				return;
+			}
+			// 创建标注对象并添加到地图   
+			for(i = 0;i <pointsLen;i++){
+				linePoints.push(new BMap.Point(points[i].lng,points[i].lat));
+			}
+			polyline = new BMap.Polyline(linePoints, {strokeColor:"red", strokeWeight:2, strokeOpacity:0.5});   //创建折线
+			map.addOverlay(polyline);   //增加折线
+		}
+		//随机生成新的点，加入到轨迹中。
+		function dynamicLine(){
+		  if(isvalid ==1)
+		  {
+		    isvalid =0;
+			var lng = lonti;
+			var lat = lati;
+			var id = getRandom(1000);
+			var point = {"lng":lng,"lat":lat,"status":1,"id":id}
+			var makerPoints = [];
+			var newLinePoints = [];
+			var len;
+			makerPoints.push(point);			
+			addMarker(makerPoints);//增加对应该的轨迹点
+			points.push(point);
+			bPoints.push(new BMap.Point(lng,lat));
+			len = points.length;
+			newLinePoints = points.slice(len-2, len);//最后两个点用来画线。
+			addLine(newLinePoints);//增加轨迹线
+			setZoom(bPoints);
+		}
+			setTimeout(dynamicLine, 1000);
+		}
+		//根据点信息实时更新地图显示范围，让轨迹完整显示。设置新的中心点和显示级别. 
+		//更新。设置不是每次增加点都重新设置显示范围。因为有可能会想放大了看。
+		function setZoom(bPoints){
+			var view = map.getViewport(eval(bPoints));
+			if(map.oldView != JSON.stringify(view)){
+				var mapZoom = view.zoom; 
+				var centerPoint = view.center; 
+				map.centerAndZoom(centerPoint,mapZoom);
+				map.oldView = JSON.stringify(view);
+			}
+		}
+   
+		//数据准备,
+		var points = [];//原始点信息数组
+		var bPoints = [];//百度化坐标数组。用于更新显示范围。
+		//地图操作开始
+		setTimeout(dynamicLine, 1000);//动态生成新的点。
+		 var bearing1,bearing2,bearing3,bearing4;
+		 var dis1,dis2,dis3,dis4,dis5;
+		 var alng,lng1,lng2,lng3,lng4,lng5,alat,blng,blat,lat1,lat2,lat3,lat4,lat5;
+		 function showInfo2(e2) {
+		// if(!connetflg)
+		 { 
+		   // alert("请先连接机器人！");
+     
+			document.getElementById("waypoint").value = e2.point.lng + "," + e2.point.lat;
+
+	
+		addMarkerlat( e2.point.lng, e2.point.lat,0);
+		addLine2point2(lati,lonti,e2.point.lat,e2.point.lng);
+	
+			lonti =e2.point.lng;
+			lati = e2.point.lat;
+
+
+        //json对象
+		    var jsoninf={ "type":"1" ,"lnt":"Bill" , "lat":"Gates" };
+				 jsoninf["lnt"]=e2.point.lng+'';
+				 jsoninf["lat"]=e2.point.lat+'';
+				ss = JSON.stringify(jsoninf);
+			    sendtopic =  devid+'/download/waypoints';
+				//可以如下修改firstName属性的值
+			console.log("savepoint send message"+sendtopic);
+			if(ss){
+				message = new Paho.MQTT.Message(ss);
+    
+				message.destinationName = sendtopic;
+
+		
+			    client.send(message);
+       
+		}
+		}
+       
+    }
+    map.addEventListener("rightclick",showInfo2);  
+	
+	
+	function savepoint() {
+			 
+			var jsoninf={ "type":"2" ,"lnt":"Bill" , "lat":"Gates" };
+				 jsoninf["lnt"]='0';
+				 jsoninf["lat"]='0';
+				ss = JSON.stringify(jsoninf);
+			    sendtopic =  devid+'/download/waypoints';
+				//可以如下修改firstName属性的值
+			console.log("savepoint send message"+sendtopic);
+			if(ss){
+				message = new Paho.MQTT.Message(ss);
+				message.destinationName = sendtopic;
+			    client.send(message);
+			}
+	}
+			
+	function clearpoint(){
+			var allOverlay = map.getOverlays();
+			for(var i = 0;i<allOverlay.length;i++) {
+			//删除指定经度的点
+			
+			map.removeOverlay(allOverlay[i]);
+			btn_cnt=0;
+		
+		}
+		var jsoninf={ "type":"3" ,"lnt":"Bill" , "lat":"Gates" };
+				 jsoninf["lnt"]='0';
+				 jsoninf["lat"]='0';
+				ss = JSON.stringify(jsoninf);
+			    sendtopic =  devid+'/download/waypoints';
+				//可以如下修改firstName属性的值
+			console.log("savepoint send message"+sendtopic);
+			if(ss){
+			   
+				message = new Paho.MQTT.Message(ss);
+				message.destinationName = sendtopic;
+			    client.send(message);
+				   
+			}
+
+	}
+	
+	
+		function carstop()
+	{
+		         
+				 if(!connetflg)alert("请先连接机器人！");
+			     console.log("into send message");
+			    
+			    sendtopic = devid+ '/download/control';
+				    //可以如下修改firstName属性的值
+            	messagebody = ''+'stop'+',' +'\r\n';
+			     console.log("savepoint send message"+sendtopic);
+                if(messagebody){
+                   
+                    message = new Paho.MQTT.Message(messagebody);
+                    message.destinationName = sendtopic;
+                    client.send(message);
+                       
+                }
+	
+	}
+	function coordinateSend() {
+	             
+				 if(!connetflg)alert("请先连接机器人！");
+			     console.log("into send message");
+			    
+			    sendtopic = devid+ '/download/control';
+				    //可以如下修改firstName属性的值
+                cmd =2;//跑起来 run
+				node =2;
+				
+				messagebody = ''+"start"+','+ node +'\r\n';
+				console.log("savepoint send message"+sendtopic);
+                if(messagebody){
+                   
+                    message = new Paho.MQTT.Message(messagebody);
+                    message.destinationName = sendtopic;
+                    client.send(message);
+                       
+                }
+	
+	}
+	function runforward() {
+	             
+				 if(!connetflg)alert("请先连接机器人！");
+			     console.log("into send message");
+			    
+			  var jsoninf={ "control":"1" ,"vel":"Bill" , "ang":"Gates" };
+		sendtopic = devid +'/download/control';
+				    //可以如下修改firstName属性的值
+
+
+			
+		 jsoninf["vel"] = '0.1';
+		 jsoninf["ang"] = '0.0';
+		ss = JSON.stringify(jsoninf);
+		console.log(jsoninf);
+		if(ss){
+		   // s = "{time:"+new Date().Format("yyyy-MM-dd hh:mm:ss")+", content:"+(s)+", from: web console}";
+			message = new Paho.MQTT.Message(ss);
+                    message.destinationName = sendtopic;
+                    client.send(message);
+                       
+                }
+	
+	}
+	function send_x_y(velocity,angle){
+		 console.log("into send message");
+		 //json对象
+		var jsoninf={ "control":"1" ,"vel":"Bill" , "ang":"Gates" };
+		sendtopic = devid +'/download/control';
+			//可以如下修改firstName属性的值
+		 jsoninf["vel"] = velocity.toFixed(1) +'';
+		 jsoninf["ang"] = angle.toFixed(1) +'';
+		ss = JSON.stringify(jsoninf);
+		console.log(jsoninf);
+		if(ss){
+		   // s = "{time:"+new Date().Format("yyyy-MM-dd hh:mm:ss")+", content:"+(s)+", from: web console}";
+			message = new Paho.MQTT.Message(ss);
+			message.destinationName = sendtopic;
+				client.send(message);
+		}
+	}
+
+		function turnround() {
+	             
+				  if(!connetflg)alert("请先连接机器人！");
+			     console.log("into send message");
+			    
+			  var jsoninf={ "control":"1" ,"vel":"Bill" , "ang":"Gates" };
+		sendtopic = devid +'/download/control';
+				    //可以如下修改firstName属性的值
+
+
+			
+		 jsoninf["vel"] = '0.0';
+		 jsoninf["ang"] = '0.2';
+		ss = JSON.stringify(jsoninf);
+		console.log(jsoninf);
+		if(ss){
+		   // s = "{time:"+new Date().Format("yyyy-MM-dd hh:mm:ss")+", content:"+(s)+", from: web console}";
+			message = new Paho.MQTT.Message(ss);
+                    message.destinationName = sendtopic;
+                    client.send(message);
+                       
+                }
+	
+	}
+function set_speed()
+{
+	if(!connetflg)alert("请先连接机器人！");
+			     console.log("into send message");
+		var jsoninf={ "control":"1" ,"speed":"Bill" , "ang":"Gates" };
+		sendtopic = devid +'/download/control';
+			//可以如下修改firstName属性的值
+		 speed =document.getElementById("setvel").value;
+		 jsoninf["speed"] = speed ;
+		 jsoninf["ang"] = '-0.2';
+	
+		ss = JSON.stringify(jsoninf);
+		console.log(jsoninf);
+		if(ss){
+		   // s = "{time:"+new Date().Format("yyyy-MM-dd hh:mm:ss")+", content:"+(s)+", from: web console}";
+			message = new Paho.MQTT.Message(ss);
+			message.destinationName = sendtopic;
+				client.send(message);
+		}
+
+}
+function turnround_right() {
+	             
+				  if(!connetflg)alert("请先连接机器人！");
+			     console.log("into send message");
+			  var jsoninf={ "control":"1" ,"vel":"Bill" , "ang":"Gates" };
+		sendtopic = devid +'/download/control';
+			//可以如下修改firstName属性的值
+			
+		 jsoninf["vel"] = '0.0';
+		 jsoninf["ang"] = '-0.2';
+	
+		ss = JSON.stringify(jsoninf);
+		console.log(jsoninf);
+		if(ss){
+		   // s = "{time:"+new Date().Format("yyyy-MM-dd hh:mm:ss")+", content:"+(s)+", from: web console}";
+			message = new Paho.MQTT.Message(ss);
+			message.destinationName = sendtopic;
+				client.send(message);
+		}
+    }
+/*一下是另一个功能*////
+   ////*****************************************/////
+   ////************************************************///
+   ////*****************************************/////
+   ////************************************************///
+	var map1;
+	//initMap2();
+	//百度地图api功能，GPS功能-单点沿直线运动
+	   //创建和初始化地图函数：
+    function initMap2(){
+		map1 = new BMap.Map("allmap");
+		map1.centerAndZoom(new BMap.Point(lonti, lati), 16);  //初始坐标点设置
+		map1.addControl(new BMap.MapTypeControl());   //添加地图类型控件
+		map1.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
+
+        addMapOverlay2();//向地图添加覆盖物
+	 
+    }
+	 function addMapOverlay2(){
+		  var markers = [
+			{content:"编号:100110016",title:"智能机器人",imageOffset: {width:0,height:3},position:{lat:lati,lng:lonti}}
+		  ];
+      for(var index = 0; index < markers.length; index++ ){
+        var point = new BMap.Point(markers[index].position.lng,markers[index].position.lat);
+        var marker = new BMap.Marker(point,{icon:new BMap.Icon("http://api.map.baidu.com/lbsapi/createmap/images/icon.png",new BMap.Size(20,25),{
+          imageOffset: new BMap.Size(markers[index].imageOffset.width,markers[index].imageOffset.height)
+        })});
+        var label = new BMap.Label(markers[index].title,{offset: new BMap.Size(25,5)});
+        var opts = {
+          width: 200,
+          title: markers[index].title,
+          enableMessage: false
+        };
+        var infoWindow = new BMap.InfoWindow(markers[index].content,opts);
+        marker.setLabel(label);
+        addClickHandler(marker,infoWindow);
+        map1.addOverlay(marker);
+      };
+    }
+	var M_PI  =   3.1415926;
+    var EARTH_RADIUS = 6378.137 ;       //地球近似半径
+    function toRadian( point)
+	{
+		return (point*M_PI)/180.0;
+	}
+
+	function toDegree( point)
+	{
+		return point*180.0/ M_PI;
+	}
+	function fmod(X, Y) 
+	{ 
+	    return X%Y ;
+	}
+	function toBearing( angle)
+	{
+
+		var bearing = toDegree(angle)+ 360.0;
+		return fmod(bearing, 360);
+	}
+
+
+/*
+
+        This function will determine the bearing of the path to be travelled
+
+*/
+
+function getBearing( longtitude_start,  latitude_start,  longtitude_end,  latitude_end)
+{
+    var rad_latitude_start = toRadian(latitude_start);
+
+    var rad_latitude_end = toRadian(latitude_end);
+
+    var deltaLongtitude = toRadian(longtitude_end)- toRadian(longtitude_start);
+
+    var x = Math.sin(deltaLongtitude)*Math.cos(rad_latitude_end);
+
+    var y = Math.cos(rad_latitude_start)*Math.sin(rad_latitude_end)-Math.sin(rad_latitude_start)*Math.cos(rad_latitude_end)*Math.cos(deltaLongtitude);
+
+    return parseInt(toBearing(Math.atan2(x, y)));
+
+}
+    //点选起始点的坐标
+
+    function showInfo(e) {
+        document.getElementById("start").value = e.point.lng + "," + e.point.lat;
+
+        alert("起点的经纬度为：" + e.point.lng + "," + e.point.lat);
+    }
+   // map.addEventListener("click", showInfo);
+     
+	
+    function drive() {
+
+    //从输入框中获取起始点的坐标
+        var alng, alat, blng, blat;
+        send();
+        alng = document.getElementById("start").value.split(",")[0];
+        alat = document.getElementById("start").value.split(",")[1];
+        blng = document.getElementById("end").value.split(",")[0];
+        blat = document.getElementById("end").value.split(",")[1];
+
+  //     alert(alng + "\t" + alat + "\n" + blng + "\t" + blat);
+
+
+    //var myP1 = new BMap.Point(116.715375, 39.515095);  //起点设置为，河北廊坊站
+    //var myP2 = new BMap.Point(115.402794, 27.738408);  //终点设置为，江西新干站
+    //116.715375, 39.515095  115.402794, 27.738408
+    var myP1 = new BMap.Point(alng,alat);  
+    var myP2 = new BMap.Point(blng,blat);  
+
+    var myIcon = new BMap.Icon("http://lbsyun.baidu.com/jsdemo/img/Mario.png",
+
+        new BMap.Size(32, 70),
+        {
+            //单点标记图
+            imageOffset: new BMap.Size(0, 0)  //图片偏移量，以对准标记点中心
+        });
+    var driving2 = new BMap.DrivingRoute(map1,
+        {
+            renderOptions: { //结果呈现设置
+                map: map1,
+                autoViewport: true,  //检索结束后自动调整地图视野
+                enableDragging: true   //起终点可进行拖拽 
+            },
+            policy: BMAP_DRIVING_POLICY_LEAST_TIME //驾车方案的策略配置,最少时间
+
+
+        });    //创建一个驾车导航实例
+
+    driving2.search(myP1, myP2);    //显示检索路线
+
+    window.run = function () {
+        var driving = new BMap.DrivingRoute(map1);
+        driving.search(myP1, myP2);
+        driving.setSearchCompleteCallback(function () {
+            var pts = driving.getResults().getPlan(0).getRoute(0).getPath();  //通过驾车实例获取一系列点的数组
+            var paths = pts.length; //获得的点的数量
+
+            var marioMK = new BMap.Marker(pts[0], { icon: myIcon });
+            map1.addOverlay(marioMK);
+            i = 0;
+
+            function restMKPoint(i) {
+                marioMK.setPosition(pts[i]);
+                if (i < paths) {
+                    setTimeout(function () {
+                        i++;
+                        restMKPoint(i);
+                    },50);//5s钟走一步
+                }
+            }
+            setTimeout(function () {
+                restMKPoint(1);
+            }, 50)
+
+        });
+    }
+    setTimeout(function () {
+        run();
+
+    },1000);
+    }
+/***************************/
+	/**************************/
+	// 实时轨迹demo。  轨迹回放功能。在左边的地图上显示
+	// 实际运用的话可能ajax实时读取后台数据，加载到地图上。
+		//工具函数
+		// 获取随机数
+		//数据准备
+		var points1 = [
+		{"lng":116.239629,"lat":40.090765,"id":8,"time":"2015-11-25 14:00:01"},
+		{"lng":116.249629,"lat":40.070765,"id":2,"time":"2015-11-25 14:00:11"},
+		{"lng":116.242629,"lat":40.060765,"id":3,"time":"2015-11-25 14:00:22"},
+		{"lng":116.245629,"lat":40.0507659,"id":4,"time":"2015-11-25 14:00:15"},
+		{"lng":116.246629,"lat":40.060765,"id":5,"time":"2015-11-25 14:00:05"},
+		{"lng":116.249629,"lat":40.020765,"id":5,"time":"2015-11-24 14:00:05"},
+		{"lng":116.259629,"lat":40.040765,"id":5,"time":"2015-11-24 14:00:15"},
+		{"lng":116.269629,"lat":40.0007655,"id":5,"time":"2015-11-24 14:00:17"}
+		];
+		var donePoints = [];//已经显示的点。
+		var bpoints1 = [];//保存百度化的坐标组。用于重设地图的中心点和显示级别。
+		var timerArr=[];//定时器
+		var interval;
+		//地图操作开始
+			//添加线
+		function addLine1(points){
+			var linePoints = [];
+			var pointsLen = points.length;
+			if(pointsLen == 0){
+				return;
+			}
+			// 创建标注对象并添加到地图   
+			for(var i = 0;i <pointsLen;i++){
+				linePoints.push(new BMap.Point(points[i].lng,points[i].lat));
+			}
+			var polyline = new BMap.Polyline(linePoints, {strokeColor:"red", strokeWeight:2, strokeOpacity:0.5});   //创建折线
+			map1.addOverlay(polyline);   //增加折线
+		}
+		//根据时间选择。
+		function loadTrackByTime(){
+			//清除当前所有的定时器和地图上的覆盖物。
+			map1.clearOverlays();
+			for (var t = 0; t < timerArr.length; t++) {
+				clearTimeout(timerArr[t]);
+			};
+			timerArr = [];
+			clearInterval(interval);
+			bpoints1.length = 0;
+			donePoints.length = 0;
+			var dateBegin = document.getElementById('datepicker1').value;
+			var dateEnd = document.getElementById('datepicker2').value;
+			//从原始数组中查询符合条件的坐标点。
+			var pointsLen = points1.length;
+			var searchRes = [];//用来装符合条件的坐标信息。
+			//满足条件的放上去。
+			for (var i = 0; i < pointsLen; i++) {
+				if(dateDiff(points1[i].time,dateBegin)>0&&dateDiff(points1[i].time,dateEnd)<0){
+					searchRes.push(points1[i]);
+				}
+			};
+			trackTime(dateBegin);
+			for (var j = 0; j < searchRes.length; j++) {
+				var wait = dateDiff(searchRes[j].time,dateBegin)*1000;//等待时间。	
+				(function() {
+					var pointAg = [searchRes[j]],timer;//闭包
+					timer = setTimeout(function(){
+						var doneLen = donePoints.length;
+						var linePoints = [];
+						if(doneLen!=0){				
+							linePoints.push(donePoints[doneLen-1]);
+						}
+						linePoints.push(pointAg[0]);
+						donePoints.push(pointAg[0]);
+						addLine1(linePoints); //把原始数据的轨迹线添加到地图上。
+						
+						addMarker1(pointAg); 
+						bPoints1.push(new BMap.Point(pointAg[0].lng,pointAg[0].lat));
+						setZoom1(bPoints1); 
+					},wait);
+					timerArr.push(timer);
+				})();
+			};
+		}
+	
+		//根据点信息实时更新地图显示范围，让轨迹完整显示。设置新的中心点和显示级别
+		function setZoom1(bPoints){
+			var view = map1.getViewport(eval(bPoints));
+			var mapZoom = view.zoom; 
+			var centerPoint = view.center; 
+			map1.centerAndZoom(centerPoint,mapZoom);
+		}
+		//在轨迹点上创建图标，并添加点击事件，显示轨迹点信息。points,数组。
+		function addMarker1(points){
+			var pointsLen = points.length;
+			if(pointsLen == 0){
+				return;
+			}
+			var myIcon = new BMap.Icon("http://api.map.baidu.com/lbsapi/createmap/images/icon.png", new BMap.Size(10, 10), {
+				offset: new BMap.Size(10, 10) 
+			});
+			// 创建标注对象并添加到地图   
+			for(var i = 0;i <pointsLen;i++){
+				var point = new BMap.Point(points[i].lng,points[i].lat);
+				var marker = new BMap.Marker(point, {icon: myIcon});
+				map.addOverlay(marker); 
+				(function() {
+					var thePoint = points[i];
+					marker.addEventListener("click",function(){
+						showInfo(this,thePoint);
+					});
+				})();
+			}
+		}    
+		//点击轨迹点后显示信息窗口
+		function showInfo(thisMaker,point){
+			var sContent =
+			"<ul style='margin:0 0 5px 0;padding:0.2em 0'>"
+			+"<li style='line-height: 26px;font-size: 15px;'>"
+			+"<span style='width: 50px;display: inline-block;'>id：</span>" + point.id + "</li>"
+			+"<li style='line-height: 26px;font-size: 15px;'><span style='width: 50px;display: inline-block;'>状态：</span>"+point.time +"</li>"
+			+"</ul>";
+			var infoWindow = new BMap.InfoWindow(sContent);  // 创建信息窗口对象
+	   		thisMaker.openInfoWindow(infoWindow);   //图片加载完毕重绘infowindow
+	   	}
+	
+		//显示轨迹运行的时间
+		function trackTime(beginTime){
+			var beginTimestamp = Date.parse(new Date(beginTime));
+			interval = setInterval(function(){
+				var time =  getDate(beginTimestamp).time;
+				document.getElementById('realTime').innerHTML = "回放时间"+time;
+				beginTimestamp = beginTimestamp + 1000;
+			},1000)
+		}
+		//根据时间戳（毫秒），返回处理过后的时间。
+		function getDate(ms){
+			var res;
+			if(ms!=undefined){
+				var today = new Date()
+				today.setTime(ms);
+			}else{
+				var today = new Date();
+			}
+			var year,month,day,hour,minute,second;
+			year = today.getFullYear();
+			month = today.getMonth() + 1;
+			if(month<10){
+				month = '0'+month;
+			}
+			day = today.getDate();
+			if(day<10){
+				day = '0'+day;
+			}
+			hour = today.getHours();
+			if(hour<10){
+				hour = '0'+hour;
+			}
+			minute = today.getMinutes();
+			if(minute<10){
+				minute = '0'+minute;
+			}
+			second = today.getSeconds();
+			if(second<10){
+				second = '0'+second;
+			}
+			res={
+				'y':year,
+				'M':month,
+				'd':day,
+				'h':hour,
+				"m":minute,
+				"s":second,
+				"time":year+"-"+month+"-"+day+" "+hour+":"+minute+":"+second,
+				"date":year+"-"+month+"-"+day
+			}
+			return res;
+		}
+		//求时间差的方法
+		function dateDiff(date1, date2){ 
+			var type1 = typeof date1, type2 = typeof date2; 
+			if(type1 == 'string') 
+				date1 = stringToTime(date1); 
+			else if(date1.getTime) 
+				date1 = date1.getTime(); 
+			if(type2 == 'string') 
+				date2 = stringToTime(date2); 
+			else if(date2.getTime) 
+				date2 = date2.getTime(); 
+		    return (date1 - date2) / 1000;//结果是秒 
+		}
+		//字符串转成Time(dateDiff)所需方法 
+		function stringToTime(string){ 
+			var f = string.split(' ', 2); 
+			var d = (f[0] ? f[0] : '').split('-', 3); 
+			var t = (f[1] ? f[1] : '').split(':', 3); 
+			return (new Date( 
+				parseInt(d[0], 10) || null, 
+				(parseInt(d[1], 10) || 1)-1, 
+				parseInt(d[2], 10) || null, 
+				parseInt(t[0], 10) || null, 
+				parseInt(t[1], 10) || null, 
+				parseInt(t[2], 10) || null 
+				)).getTime();
+		}
+		
+	
+  </script>
+</html>

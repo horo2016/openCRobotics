@@ -1,0 +1,9 @@
+# 项目始建于2019年1月份多次改版至今
+/*2020.1--增加地图waypoint
+/*2020.2 --add kalman gps filter 
+/*2020.3.13 add imu rtimu
+/*2020.3.30 modify imu 
+/*2020.5   modify stm32 com
+/*2020.5   web html build
+/*2020.6.21 add mqtt thread
+/*2020.6.24 add cpu thread 
